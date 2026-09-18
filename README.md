@@ -203,10 +203,16 @@ Se diseñó un **Circuito de Resiliencia en 4 Capas** desacoplado mediante la in
 > *Libertad para definir la arquitectura. Debe evitar concentrar toda la lógica de negocio directamente dentro de Controllers o componentes Vue. Explicar brevemente en el README la arquitectura seleccionada y las razones de su elección.*
 
 #### Por qué elegimos Clean Architecture Pragmática (Action-Driven):
-- **Desacoplamiento Real**: La lógica de negocio no sabe si se ejecuta desde una petición HTTP, un comando Artisan de consola o una prueba unitaria.
-- **Principio de Responsabilidad Única (SRP)**: Cada caso de uso es una clase individual (`CalculateQuotationAction`, `CreateQuotationAction`, `ContractQuotationAction`).
-- **Inversión de Dependencias (DIP)**: El dominio interactúa con proveedores de datos a través de contratos (`CountryProviderInterface`).
-- **Controladores Delgados (*Slim Controllers*)**: `QuotationController.php` solo orquesta y retorna respuestas JSON estandarizadas.
+1. **Desacoplamiento Real**: La lógica de negocio no sabe si se ejecuta desde una petición HTTP, un comando Artisan de consola o una prueba automatizada.
+2. **Principio de Responsabilidad Única (SRP)**: Cada caso de uso es una clase ejecutable individual con un único método `execute()` ([CalculateQuotationAction.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Actions/CalculateQuotationAction.php), [CreateQuotationAction.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Actions/CreateQuotationAction.php), [ContractQuotationAction.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Actions/ContractQuotationAction.php)).
+3. **Data Transfer Objects (DTOs) Inmutables (PHP 8.4 `readonly class`)**:
+   - En lugar de propagar arreglos asociativos sin tipar (`$request->all()`), se implementaron DTOs fuertemente tipados e inmutables:
+     - [`QuotationData.php`](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/DTOs/QuotationData.php): Transporta los datos validados del asegurado y del viaje hacia el dominio.
+     - [`PricingBreakdownData.php`](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/DTOs/PricingBreakdownData.php): Transporta el desglose financiero exacto calculado.
+     - [`CountryData.php`](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/DTOs/CountryData.php): Estandariza la información de países desde cualquier proveedor externo.
+   - **Ventajas de ingeniería:** Garantiza inmutabilidad estricta, *type-safety* en tiempo de análisis, prevención de errores por claves mal escritas y desacoplamiento absoluto de la capa de dominio respecto a la clase `Request` de Laravel.
+4. **Inversión de Dependencias (DIP) con Contratos**: El dominio interactúa con proveedores de datos a través del contrato [CountryProviderInterface.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Contracts/CountryProviderInterface.php).
+5. **Controladores Delgados (*Slim Controllers*)**: [QuotationController.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Http/Controllers/QuotationController.php) actúa únicamente como mediador: recibe el request, invoca la Action con su respectivo DTO y retorna una respuesta JSON estandarizada.
 
 ---
 
