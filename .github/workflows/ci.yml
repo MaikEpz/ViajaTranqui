@@ -76,13 +76,6 @@ jobs:
       - name: Execute Automated Tests with PEST
         run: php artisan test
         working-directory: backend
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: viajatranqui
-          DB_USERNAME: viaja_user
-          DB_PASSWORD: secret
 
   frontend-build:
     name: Frontend Typecheck & Build (Vue 3 + TypeScript)
