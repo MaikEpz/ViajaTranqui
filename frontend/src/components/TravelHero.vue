@@ -157,13 +157,13 @@ function onCotizarClick() {
   position: relative;
   border-radius: var(--radius-xl);
   overflow: visible;
-  margin-bottom: 54px;
+  margin-bottom: 24px;
 }
 
 .hero-image-wrapper {
   position: relative;
   width: 100%;
-  height: 460px;
+  height: 480px;
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.12);
@@ -191,7 +191,7 @@ function onCotizarClick() {
     180deg,
     rgba(0, 0, 0, 0.22) 0%,
     rgba(0, 0, 0, 0.40) 50%,
-    rgba(0, 0, 0, 0.65) 100%
+    rgba(0, 0, 0, 0.70) 100%
   );
 }
 
@@ -200,7 +200,7 @@ function onCotizarClick() {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 45px;
+  bottom: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -238,13 +238,13 @@ function onCotizarClick() {
 }
 
 /* ============================================================
-   LA CÁPSULA FLOTANTE DE BÚSQUEDA (SUBIDA MÁS ARRIBA Y ANIMADA)
+   LA CÁPSULA FLOTANTE DE BÚSQUEDA (ELEVADA DENTRO DEL BANNER)
    ============================================================ */
 .floating-capsule-wrapper {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -22px; /* Subida para que monte limpiamente sobre el límite del hero */
+  bottom: 30px; /* Elevada limpiamente sobre el hero */
   display: flex;
   justify-content: center;
   padding: 0 20px;
