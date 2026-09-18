@@ -342,11 +342,12 @@ async function triggerRecalculation() {
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return '-';
-  const parts = dateStr.split('-');
+  const clean = dateStr.split('T')[0];
+  const parts = clean.split('-');
   if (parts.length === 3) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
-  return dateStr;
+  return clean;
 }
 
 function validate(): boolean {

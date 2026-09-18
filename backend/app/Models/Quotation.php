@@ -36,9 +36,9 @@ class Quotation extends Model
     ];
 
     protected $casts = [
-        'birth_date'           => 'date',
-        'start_date'           => 'date',
-        'end_date'             => 'date',
+        'birth_date'           => 'date:Y-m-d',
+        'start_date'           => 'date:Y-m-d',
+        'end_date'             => 'date:Y-m-d',
         'days_count'           => 'integer',
         'base_rate_per_day'    => 'decimal:2',
         'base_amount'          => 'decimal:2',

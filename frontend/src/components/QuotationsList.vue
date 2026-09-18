@@ -133,9 +133,11 @@
             <!-- Columna 4: Fechas y Cantidad de Días -->
             <td class="td-dates">
               <div class="dates-range">
-                {{ formatDate(quote.start_date) }} — {{ formatDate(quote.end_date) }}
+                <span>{{ formatDate(quote.start_date) }}</span>
+                <span class="range-sep">→</span>
+                <span>{{ formatDate(quote.end_date) }}</span>
               </div>
-              <span class="days-badge">{{ quote.days_count }} días de cobertura</span>
+              <span class="days-badge">{{ quote.days_count }} días</span>
             </td>
 
             <!-- Columna 5: Monto Total y Estado -->
@@ -252,9 +254,12 @@ async function handleContract(id: number): Promise<void> {
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '-';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  return dateStr;
+  const clean = dateStr.split('T')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return clean;
 }
 
 function formatDateTime(dateTimeStr: string | null): string {
@@ -537,6 +542,13 @@ function formatDateTime(dateTimeStr: string | null): string {
   font-weight: 600;
   color: #222222;
   line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.range-sep {
+  color: #a1a1aa;
+  font-size: 0.76rem;
 }
 .days-badge {
   display: inline-block;
