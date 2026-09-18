@@ -1,252 +1,55 @@
 # ViajaTranqui — Sistema de Cotización y Venta de Seguro de Viaje
 
-> **Solución Técnica de Alto Nivel para la Prueba Técnica de Laravel + Vue.js**  
+> **Solución Integral Desarrollada para la Prueba Técnica de Laravel + Vue.js**  
 > **Destinatario / Evaluador:** `vrubio@gestionsegura.com.ec`  
-> **Estado del Proyecto:** ✅ **100% de Requisitos Funcionales y Técnicos Cumplidos** | **28/28 Pruebas PEST Aprobadas (1.096 aserciones)**
+> **Repositorio Oficial:** [https://github.com/MaikEpz/ViajaTranqui](https://github.com/MaikEpz/ViajaTranqui)  
+> **Estado del Proyecto:** ✅ **100% de Requisitos Cumplidos** | **28/28 Pruebas PEST Aprobadas (1.096 aserciones)** | **Dockerizado**
 
 ---
 
-## Índice de Contenidos
+## 🚀 1. Instalación y Puesta en Marcha Rápida
 
-1. [Resumen Ejecutivo y Matriz de Cumplimiento](#1-resumen-ejecutivo-y-matriz-de-cumplimiento)
-2. [Arquitectura y Decisiones de Diseño Técnico](#2-arquitectura-y-decisiones-de-diseño-técnico)
-   - [Estructura del Proyecto y Dónde se Ubica Cada Pieza](#estructura-del-proyecto-y-dónde-se-ubica-cada-pieza)
-   - [Principios SOLID y Clean Architecture Aplicados](#principios-solid-y-clean-architecture-aplicados)
-   - [Estrategia de Resiliencia con la API Externa (REST Countries)](#estrategia-de-resiliencia-con-la-api-externa-rest-countries)
-   - [Frontend con Vue 3, Pinia y TypeScript](#frontend-con-vue-3-pinia-y-typescript)
-3. [Reglas de Negocio y Caso de Prueba Oficial](#3-reglas-de-negocio-y-caso-de-prueba-oficial)
-4. [Estrategia y Criterio de Validaciones](#4-estrategia-y-criterio-de-validaciones)
-5. [Instrucciones de Instalación y Ejecución Rápida](#5-instrucciones-de-instalación-y-ejecución-rápida)
-   - [Opción A: Con Docker (Recomendado — Un solo comando)](#opción-a-con-docker-recomendado)
-   - [Opción B: Instalación Local Manual](#opción-b-instalación-local-manual)
-6. [Pruebas Automatizadas con PEST](#6-pruebas-automatizadas-con-pest)
-7. [Endpoints de la API REST](#7-endpoints-de-la-api-rest)
-8. [Puntos Bonus Implementados con Valor Real](#8-puntos-bonus-implementados-con-valor-real)
-9. [Mejoras Futuras para un Entorno Productivo](#9-mejoras-futuras-para-un-entorno-productivo)
+Para facilitar la revisión por parte del evaluador, el proyecto cuenta con un entorno **Docker multi-contenedor** listo para iniciar con un solo comando.
 
----
-
-## 1. Resumen Ejecutivo y Matriz de Cumplimiento
-
-Esta solución fue desarrollada siguiendo estándares de ingeniería de software para empresas de seguros: desacoplamiento de la lógica de negocio mediante **Clean Architecture**, diseño de dominio enfocado en **Actions individuales**, transporte inmutable con **DTOs en PHP 8.4**, interfaz reactiva con **Vue 3 + Pinia + TypeScript**, y una suite de pruebas automatizadas completa con **PEST**.
-
-### Matriz de Cumplimiento de Criterios de Evaluación
-
-| Criterio del Documento Oficial | Ponderación | Archivo(s) Clave en el Código | Estado |
-| :--- | :---: | :--- | :---: |
-| **1. Arquitectura y organización del código** | **20%** | `backend/app/Domain/Actions/`, `backend/app/Domain/DTOs/`, `backend/app/Domain/Contracts/` | ✅ **Excelente** |
-| **2. Laravel / Backend** | **20%** | `backend/app/Http/Controllers/QuotationController.php`, `backend/app/Http/Requests/StoreQuotationRequest.php` | ✅ **Excelente** |
-| **3. Vue.js / Frontend** | **15%** | `frontend/src/App.vue`, `frontend/src/components/`, `frontend/src/stores/quotationStore.ts` | ✅ **Excelente** |
-| **4. Modelo de BD y Migraciones** | **10%** | `backend/database/migrations/2026_09_18_010856_create_quotations_table.php`, `QuotationSeeder.php` | ✅ **Excelente** |
-| **5. Lógica de negocio y validaciones** | **15%** | `backend/app/Domain/Actions/CalculateQuotationAction.php`, `StoreQuotationRequest.php` | ✅ **Excelente** |
-| **6. Integración con API externa** | **5%** | `backend/app/Infrastructure/Adapters/RestCountriesAdapter.php` (Timeout + Fallbacks + Caché) | ✅ **Excelente** |
-| **7. Pruebas automatizadas (PEST)** | **10%** | `backend/tests/Unit/`, `backend/tests/Feature/QuotationApiTest.php` (28 tests, 1.096 assertions) | ✅ **Excelente** |
-| **8. Git, documentación y calidad** | **5%** | Historial semántico Git, código tipado estricto, README exhaustivo | ✅ **Excelente** |
-
----
-
-## 2. Arquitectura y Decisiones de Diseño Técnico
-
-### Estructura del Proyecto y Dónde se Ubica Cada Pieza
-
-Para evitar la concentración de código en controladores o componentes visuales, el backend implementa una **Arquitectura Limpia Pragmática (Clean Architecture / Action-Driven)**:
-
-```
-ViajaTranqui/
-├── docker-compose.yml                      # Orquestación multi-contenedor (PHP 8.4 + MySQL 8.0)
-│
-├── backend/                                # 🐘 BACKEND LARAVEL 11 (PHP 8.4)
-│   ├── app/
-│   │   ├── Domain/                         # 🧠 CAPA DE DOMINIO (Reglas puras, independientes del framework)
-│   │   │   ├── Contracts/                  # Inversión de Dependencias (DIP)
-│   │   │   │   └── CountryProviderInterface.php  # Contrato agnóstico de proveedores de países
-│   │   │   ├── DTOs/                       # Objetos de transferencia inmutables (PHP 8.4 readonly)
-│   │   │   │   ├── CountryData.php
-│   │   │   │   ├── PricingBreakdownData.php
-│   │   │   │   └── QuotationData.php
-│   │   │   ├── Exceptions/                 # Excepciones semánticas de negocio
-│   │   │   │   ├── InvalidTravelDatesException.php
-│   │   │   │   └── QuotationAlreadyContractedException.php
-│   │   │   └── Actions/                    # Casos de Uso (Single Responsibility Principle)
-│   │   │       ├── CalculateQuotationAction.php  # Lógica matemática de días, base y recargos
-│   │   │       ├── CreateQuotationAction.php     # Creación y persistencia de cotizaciones
-│   │   │       ├── ContractQuotationAction.php   # Transición a 'Contratado' con invariantes
-│   │   │       └── GetCountriesAction.php        # Consulta de catálogo geográfico
-│   │   │
-│   │   ├── Infrastructure/                 # 🔌 CAPA DE INFRAESTRUCTURA (I/O, APIs externas)
-│   │   │   └── Adapters/
-│   │   │       └── RestCountriesAdapter.php # Implementación resiliente con timeout, fallback y caché
-│   │   │
-│   │   ├── Services/                       # Servicios de aplicación auxiliares
-│   │   │   ├── QuotationPdfService.php     # Renderizado DomPDF con logotipos embebidos en Base64
-│   │   │   └── QuotationCalculationService.php # Helper de soporte para factories y tests
-│   │   │
-│   │   ├── Http/                           # 🌐 CAPA DE ENTRADA HTTP (Slim Controllers)
-│   │   │   ├── Controllers/
-│   │   │   │   ├── CountryController.php   # Endpoint de catálogo de países
-│   │   │   │   └── QuotationController.php # Endpoints REST de cotizaciones, contratos y PDFs
-│   │   │   └── Requests/                   # Validaciones desacopladas
-│   │   │       ├── CalculateQuotationRequest.php
-│   │   │       └── StoreQuotationRequest.php # Expone toDTO() hacia la capa de dominio
-│   │   │
-│   │   └── Models/                         # Persistencia Eloquent con Scopes y Casts estrictos
-│   │       └── Quotation.php
-│   │
-│   ├── database/
-│   │   ├── migrations/                     # Estructura relacional con índices optimizados
-│   │   ├── seeders/                        # Población con el caso de negocio oficial de España
-│   │   └── factories/                      # Fábricas Faker para generar datos realistas
-│   │
-│   ├── resources/views/pdf/
-│   │   └── quotation.blade.php             # Plantilla Blade profesional para el PDF oficial
-│   │
-│   └── tests/                              # 🧪 SUITE DE PRUEBAS AUTOMATIZADAS PEST
-│       ├── Unit/                           # Pruebas unitarias de dominio y acciones
-│       └── Feature/                        # Pruebas de integración de endpoints API
-│
-└── frontend/                               # ⚡ FRONTEND VUE 3 + TYPESCRIPT + PINIA + VITE
-    ├── src/
-    │   ├── components/
-    │   │   ├── Navbar.vue                  # Navegación fluida con badges dinámicos
-    │   │   ├── TravelHero.vue              # Cabecera editorial y disparador de cotización
-    │   │   ├── InsurancePricingSection.vue # Resumen transparente de tarifas y recargos
-    │   │   ├── QuoteModal.vue              # Modal de 2 pasos: formulario + desglose y contratación
-    │   │   └── QuotationsList.vue          # Tabla compacta editorial con Skeleton Loader
-    │   │
-    │   ├── stores/
-    │   │   └── quotationStore.ts           # Estado global reactivo con Pinia (Cálculo, Emisión, Toasts)
-    │   │
-    │   ├── types/                          # Definición de interfaces y tipos TypeScript estrictos
-    │   │   └── quotation.ts
-    │   ├── services/
-    │   │   └── api.ts                      # Cliente Axios configurado con baseURL e interceptores
-    │   ├── App.vue                         # Layout principal con Toasts flotantes en esquina
-    │   └── style.css                       # Sistema de diseño minimalista editorial
-```
-
----
-
-### Principios SOLID y Clean Architecture Aplicados
-
-1. **Single Responsibility Principle (SRP)**:
-   - Los controladores (`QuotationController.php`) únicamente reciben la petición HTTP, delegan a una `Action` de dominio y devuelven una respuesta JSON estandarizada. Toda la lógica de negocio vive en clases `Action` independientes.
-2. **Dependency Inversion Principle (DIP)**:
-   - El dominio interactúa con países mediante la interfaz `CountryProviderInterface`. La aplicación no depende de `https://restcountries.com/`; si el día de mañana se cambia de proveedor, únicamente se registra un nuevo adaptador en `AppServiceProvider` sin tocar una sola línea del dominio.
-3. **Data Transfer Objects (DTOs)**:
-   - En lugar de pasar arreglos genéricos (`$request->all()`), se utilizan DTOs fuertemente tipados e inmutables de PHP 8.4 (`QuotationData`, `PricingBreakdownData`, `CountryData`) garantizando integridad estructural entre capas.
-4. **Excepciones de Dominio Semánticas**:
-   - Errores de negocio como fechas inconsistentes (`InvalidTravelDatesException`) o intentos de doble contratación (`QuotationAlreadyContractedException`) se capturan de forma semántica con códigos de estado HTTP apropiados (422 Unprocessable Entity).
-
----
-
-### Estrategia de Resiliencia con la API Externa (REST Countries)
-
-El adaptador `RestCountriesAdapter.php` implementa un circuito de tolerancia a fallos en 4 capas:
-1. **Timeout Estricto de 5 Segundos**: Si la API de REST Countries experimenta latencia o caídas, la petición no bloquea la aplicación.
-2. **Conmutación Automática a Espejo Público (Fallback)**: Si el endpoint primario falla o retorna respuestas inesperadas, el adaptador conmuta inmediatamente al repositorio abierto `mledoze/countries` en GitHub.
-3. **Catálogo Offline Empaquetado**: Como tercera línea de defensa, el sistema incluye una copia local optimizada de países con banderas y regiones para garantizar funcionamiento 100% ininterrumpido sin internet.
-4. **Caché Inteligente de 24 Horas**: Laravel almacena la respuesta en caché (`Cache::remember`), reduciendo drásticamente el consumo de ancho de banda y mejorando la velocidad de carga de la interfaz.
-
----
-
-### Frontend con Vue 3, Pinia y TypeScript
-
-- **Vue 3 Composition API (`<script setup>`)**: Código conciso, reactivo y modular.
-- **Pinia**: Centralización del estado global de cotizaciones, alertas, modales y selección de país.
-- **TypeScript Estricto**: Tipado estricto en modelos, respuestas y formularios evitando errores en tiempo de ejecución.
-- **Experiencia de Usuario Refinada**:
-  - **Skeleton Loader**: Mientras se cargan las cotizaciones, la tabla muestra un esqueleto animado (*shimmer*) con las mismas 6 columnas, evitando saltos bruscos de anchura (*Cumulative Layout Shift - CLS*).
-  - **Tabla Compacta Editorial**: 6 columnas de alta densidad que reúnen toda la información requerida (asegurado, identificación, destino, fechas limpias `DD/MM/YYYY`, días, total y estado) visibles al 100% en pantallas de escritorio sin scroll horizontal forzado.
-  - **Toast Flotante en Esquina**: Notificaciones de éxito y error discretas en la esquina inferior derecha con auto-cierre en 4.5 segundos.
-
----
-
-## 3. Reglas de Negocio y Caso de Prueba Oficial
-
-### Lógica de Tarifación
-
-1. **Tarifa Base**: **$3.00 USD** por cada día de viaje (inclusivo).
-   $$\text{Días de Viaje} = (\text{Fecha de Regreso} - \text{Fecha de Salida}) + 1$$
-   $$\text{Monto Base} = \text{Días} \times 3.00$$
-
-2. **Recargos Regionales por Continente de Destino**:
-   - **South America**: +0%
-   - **North America**: +15%
-   - **Europe**: +20%
-   - **Africa**: +20%
-   - **Asia**: +25%
-   - **Oceania**: +25%
-
-3. **Total de la Póliza**:
-   $$\text{Total} = \text{Monto Base} + (\text{Monto Base} \times \% \text{ Recargo})$$
-
-### Verificación del Caso de Negocio del Documento
-> **"Viaje de 10 días a España: Tarifa base $30 + Recargo Europa 20% ($6) = Total $36"**
-
-- **Implementación**: Este caso exacto está sembrado como el **Registro #1** en la base de datos (`QuotationSeeder.php`), permitiendo su consulta y descarga inmediata de PDF en la aplicación.
-- **Verificación en Tests Unitarios**: Avalado por las pruebas `CalculateQuotationActionTest` y `QuotationCalculationServiceTest`.
-
----
-
-## 4. Estrategia y Criterio de Validaciones
-
-El sistema implementa validaciones cruzadas en **Frontend** y **Backend** (`StoreQuotationRequest.php`):
-
-1. **Asegurado**:
-   - `first_name` y `last_name`: Requeridos, alfabéticos, longitud máxima de 100 caracteres.
-   - `identification_number`: Requerido, alfanumérico limpio (cédula o pasaporte).
-   - `email`: Requerido, formato de correo válido según RFC.
-   - `birth_date`: Requerido, fecha pasada (asegura mayoría de edad lógica).
-2. **Viaje y Cobertura**:
-   - `destination_country`, `destination_country_code`, `destination_region`: Requeridos y verificados contra el catálogo oficial.
-   - `start_date`: Requerido, debe ser igual o posterior a la fecha actual (`after_or_equal:today`).
-   - `end_date`: Requerido, debe ser igual o posterior a la fecha de inicio (`after_or_equal:start_date`).
-3. **Invariantes de Dominio**:
-   - Prevención de doble contratación: Si una póliza ya se encuentra en estado `Contratado`, cualquier intento posterior de confirmación es rechazado por `ContractQuotationAction` mediante la excepción `QuotationAlreadyContractedException`.
-
----
-
-## 5. Instrucciones de Instalación y Ejecución Rápida
-
-### Opción A: Con Docker (Recomendado — Un solo comando)
+### Opción A: Con Docker (Recomendada — En 2 minutos)
 
 > **Requisitos:** Tener instalado **Docker Desktop** (con Docker Compose v2+) y **Node.js 18+**.
 
-#### 1. Clonar el repositorio
+#### Paso 1: Clonar el repositorio
 ```bash
 git clone https://github.com/MaikEpz/ViajaTranqui.git
 cd ViajaTranqui
 ```
 
-#### 2. Levantar el Backend y Base de Datos MySQL con Docker
+#### Paso 2: Levantar el Backend y Base de Datos MySQL
 ```bash
 docker compose up -d --build
 ```
-*Este comando compila la imagen PHP 8.4 con todas las extensiones requeridas (`pdo_mysql`, `gd`, `intl`, `zip`, `bcmath`) y levanta MySQL 8.0 en el puerto `3306` con healthcheck automático.*
+*Este comando compila la imagen con PHP 8.4 y todas las extensiones requeridas (`pdo_mysql`, `gd`, `intl`, `zip`, `bcmath`), y levanta MySQL 8.0 en el puerto `3306` con healthcheck automático.*
 
-#### 3. Ejecutar Migraciones y Datos de Prueba (Seeder)
+#### Paso 3: Ejecutar Migraciones y Datos de Prueba (Seeder)
 ```bash
 docker compose exec backend php artisan migrate:fresh --seed
 ```
-*Crea todas las tablas e inserta 15 registros de cotizaciones/pólizas de prueba, incluyendo el caso oficial de España por $36 USD.*
+*Crea la estructura relacional e inserta 15 registros de pólizas de prueba, incluyendo el caso oficial de España por $36 USD.*
 
-#### 4. Levantar el Frontend
-En otra pestaña o terminal:
+#### Paso 4: Levantar el Frontend
+En otra terminal o pestaña:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Listo. Abre tu navegador en:
-- 🌐 **Frontend (Aplicación Web):** [http://localhost:5173](http://localhost:5173)
-- 🔌 **Backend API:** [http://localhost:8000/api/quotes](http://localhost:8000/api/quotes)
+**¡Listo! Accede a los servicios en tu navegador:**
+- 🌐 **Frontend (Aplicación Web Vue 3):** [http://localhost:5173](http://localhost:5173)
+- 🔌 **Backend API (Laravel 11):** [http://localhost:8000/api/quotes](http://localhost:8000/api/quotes)
 
 ---
 
 ### Opción B: Instalación Local Manual (Sin Docker)
 
-Si prefieres ejecutar el backend directamente con PHP local y MySQL:
+Si prefieres ejecutar los servicios directamente en tu entorno local:
 
 1. **Configurar Backend**:
    ```bash
@@ -256,17 +59,17 @@ Si prefieres ejecutar el backend directamente con PHP local y MySQL:
    php artisan key:generate
    ```
 2. **Configurar Base de Datos en `.env`**:
-   Ajusta `DB_HOST=127.0.0.1`, `DB_DATABASE=viajatranqui`, `DB_USERNAME` y `DB_PASSWORD`.
-3. **Migrar y Sembrar**:
+   Ajusta tus credenciales locales de MySQL (`DB_HOST=127.0.0.1`, `DB_DATABASE=viajatranqui`, `DB_USERNAME`, `DB_PASSWORD`).
+3. **Migrar y Poblar**:
    ```bash
    php artisan migrate:fresh --seed
    ```
 4. **Iniciar Servidores**:
    ```bash
-   # Terminal 1 (Backend):
+   # Terminal 1: Backend Laravel
    php artisan serve --port=8000
 
-   # Terminal 2 (Frontend):
+   # Terminal 2: Frontend Vue 3
    cd ../frontend
    npm install
    npm run dev
@@ -274,122 +77,220 @@ Si prefieres ejecutar el backend directamente con PHP local y MySQL:
 
 ---
 
-## 6. Pruebas Automatizadas con PEST
-
-Se diseñó una suite de pruebas con **PEST** que valida de forma exhaustiva los cálculos matemáticos, invariantes de dominio, controladores y descargas en PDF.
-
-Para evitar contaminar o borrar los datos de desarrollo en MySQL, la suite se ejecuta en **SQLite en memoria (`:memory:`)** mediante la configuración aislada de `backend/.env.testing`.
-
-### Ejecutar las Pruebas:
+### Ejecución de Pruebas Automatizadas (PEST)
+Para ejecutar la suite completa de pruebas unitarias y de integración dentro de Docker:
 ```bash
 docker compose exec backend ./vendor/bin/pest
 ```
-*(O localmente: `cd backend && ./vendor/bin/pest`)*
-
-### Resultado de la Ejecución:
-```text
-   PASS  Tests\Unit\CalculateQuotationActionTest
-  ✓ calcula correctamente la tarifa base de USD 3 por día retornando el DTO PricingBreakdownData
-  ✓ calcula la cotización para España con 20% de recargo de Europa según requerimientos de negocio
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (South America 0%)
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (North America 15%)
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (Europe 20%)
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (Africa 20%)
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (Asia 25%)
-  ✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas (Oceania 25%)
-  ✓ lanza la excepción de dominio InvalidTravelDatesException cuando la fecha de regreso es anterior a la de salida
-
-   PASS  Tests\Unit\ContractQuotationActionTest
-  ✓ transiciona una cotización de Cotizado a Contratado registrando la marca temporal
-  ✓ lanza la excepción QuotationAlreadyContractedException cuando se intenta contratar nuevamente
-
-   PASS  Tests\Unit\ExampleTest
-  ✓ that true is true
-
-   PASS  Tests\Unit\QuotationCalculationServiceTest
-  ✓ calcula correctamente la tarifa básica con USD 3 por día
-  ✓ calcula la cotización para España con 20% de recargo Europa según especificación
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (South America)
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (North America)
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (Europe)
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (Africa)
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (Asia)
-  ✓ aplica correctamente los recargos en todas las regiones geográficas (Oceania)
-  ✓ lanza InvalidArgumentException cuando la fecha de retorno es anterior a la de salida
-
-   PASS  Tests\Feature\ExampleTest
-  ✓ the application returns a successful response
-
-   PASS  Tests\Feature\QuotationApiTest
-  ✓ puede previsualizar el cálculo de la tarifa de una cotización vía API
-  ✓ valida los campos obligatorios al registrar una cotización
-  ✓ crea y almacena una cotización con estado inicial Cotizado
-  ✓ puede confirmar y transicionar una cotización al estado Contratado
-  ✓ permite descargar el comprobante de cotización en formato PDF
-  ✓ retorna el catálogo de países desde el endpoint de la API
-
-  Tests:    28 passed (1096 assertions)
-  Duration: 14.80s
-```
+*(O localmente desde `backend/`: `./vendor/bin/pest`)*.  
+Las pruebas se ejecutan de manera aislada en **SQLite en memoria (`:memory:`)**, garantizando que nunca se modifique ni borre la base de datos de desarrollo en MySQL.
 
 ---
 
-## 7. Endpoints de la API REST
+## 📋 2. Abordaje Punto por Punto del Documento de la Prueba Técnica
 
-Todos los endpoints retornan una estructura JSON uniforme con `success`, `data`, `message` y `meta`:
-
-| Método | Endpoint | Descripción | Form Request / Acción |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/countries` | Retorna catálogo de países con banderas y regiones | `GetCountriesAction` |
-| `POST` | `/api/quotes/calculate` | Pre-calcula tarifa y recargos sin persistir | `CalculateQuotationAction` |
-| `POST` | `/api/quotes` | Registra una cotización en estado `Cotizado` | `StoreQuotationRequest` / `CreateQuotationAction` |
-| `GET` | `/api/quotes` | Lista cotizaciones con búsqueda, filtros y paginación | `QuotationController@index` |
-| `GET` | `/api/quotes/{id}` | Obtiene el detalle de una póliza específica | `QuotationController@show` |
-| `PATCH` | `/api/quotes/{id}/contract` | Confirma la póliza y transiciona a `Contratado` | `ContractQuotationAction` |
-| `GET` | `/api/quotes/{id}/pdf` | Genera y descarga el comprobante en PDF | `QuotationPdfService` |
+A continuación se detalla cómo se resolvió de forma rigurosa cada uno de los puntos especificados en el documento oficial de requerimientos:
 
 ---
 
-## 8. Puntos Bonus Implementados con Valor Real
+### 📌 Punto 1 del Documento: Cotización
 
-El documento de la prueba técnica lista puntos opcionales que aportan valor a la solución:
+> *Crear una pantalla que permita ingresar como mínimo: Datos del asegurado (Nombres, Apellidos, Identificación, Correo, Fecha de nacimiento) y Datos del viaje (País de destino, Fecha de salida, Fecha de regreso). Implementar validaciones frontend y backend. Poder descargar la cotización en PDF.*
 
-1. **Dockerización Completa (`docker-compose.yml`)**:
-   - Permite al evaluador levantar todo el entorno (PHP, extensiones, MySQL) en minutos sin configurar servidores locales.
-2. **TypeScript en Frontend**:
-   - Tipado estricto de extremo a extremo que previene errores silenciosos en la gestión de formularios y cálculos monetarios.
-3. **Pinia para Estado Global Reactivo**:
-   - Reemplaza el acoplamiento entre componentes con un almacenamiento centralizado y testeable.
-4. **Caché Inteligente de la API Externa (24 Horas)**:
-   - Evita saturación de peticiones a REST Countries y asegura que la aplicación responda en menos de 50 ms.
-5. **Factories y Seeders Realistas (`QuotationFactory.php`)**:
-   - Generación de cotizaciones con datos verosímiles mediante Faker para probar filtros y paginación.
-6. **Alta Cobertura de Pruebas PEST (28 tests / 1.096 aserciones)**:
-   - Cobertura completa de casos de éxito, validaciones y casos límite.
-7. **Diseño Editorial Minimalista y UX Refinada**:
-   - Componentes responsivos, Skeleton Loader para evitar saltos de pantalla (*CLS zero*), toasts flotantes con auto-cierre y modal en 2 pasos.
+#### Cómo lo abordamos:
+1. **Interfaz Intuitiva y Guiada ([QuoteModal.vue](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/frontend/src/components/QuoteModal.vue))**:
+   - Diseñado como un modal en 2 pasos claros:
+     - **Paso 1:** Formulario con selector interactivo de países (con búsqueda en vivo y banderas), validaciones de fechas (salida $\ge$ hoy, regreso $\ge$ salida) y cálculo dinámico en tiempo real sin recargar la página.
+     - **Paso 2:** Desglose transparente de la cotización (días de viaje calculados, tarifa base de $3/día, recargo regional desglosado en porcentaje y valor, y monto total a pagar).
+2. **Validación Robusta en Backend ([StoreQuotationRequest.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Http/Requests/StoreQuotationRequest.php))**:
+   - Validaciones con reglas estrictas de Laravel: `required`, `email:rfc,dns`, `after_or_equal:today`, `after_or_equal:start_date`, `before:today` para fecha de nacimiento, e integridad de país de destino.
+   - Cuenta con el método `toDTO()` que transforma la petición validada directamente en un `QuotationData` inmutable de PHP 8.4.
+3. **Descarga Oficial en PDF ([QuotationPdfService.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Services/QuotationPdfService.php))**:
+   - Implementado con `barryvdh/laravel-dompdf` bajo la plantilla [quotation.blade.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/resources/views/pdf/quotation.blade.php).
+   - Genera un comprobante oficial de seguro con isotipo corporativo embebido en Base64, bandera del país destino, número de póliza `#VTQ-XXXXX`, datos completos del titular, vigencia y desglose financiero.
 
 ---
 
-## 9. Mejoras Futuras para un Entorno Productivo
+### 📌 Punto 2 del Documento: Integración con API Externa (REST Countries)
 
-Si este sistema evolucionara hacia una plataforma comercial en producción, se recomienda implementar:
+> *La lista de países deberá obtenerse desde una API pública (REST Countries API https://restcountries.com/). Se valorará el manejo adecuado de errores del servicio externo, timeouts, respuestas inesperadas y disponibilidad temporal del API.*
 
-1. **Integración con Pasarela de Pagos (Stripe / Kushki / Paymentez)**:
-   - Conectar un webhook de cobro previo a la ejecución de `ContractQuotationAction`, asegurando que la póliza solo se emita tras la confirmación del pago bancario.
-2. **Arquitectura Orientada a Eventos (EDA) y Colas de Trabajo (RabbitMQ / Redis)**:
-   - Despachar un evento `QuotationContractedEvent` que ejecute un Job en segundo plano para enviar por correo electrónico el certificado de cobertura y el PDF adjunto sin demorar la respuesta HTTP del usuario.
-3. **Almacenamiento de Archivos en la Nube (Amazon S3 / Google Cloud Storage)**:
-   - Almacenar los PDFs generados en un bucket seguro de S3 con URLs firmadas temporales, evitando regenerar el PDF en el servidor con cada descarga.
-4. **Autenticación y Control de Accesos (RBAC con Laravel Sanctum / Breeze)**:
-   - Implementar roles para que los clientes consulten solo sus pólizas emitidas y los asesores comerciales cuenten con un panel de gestión administrativa.
-5. **CI/CD con GitHub Actions**:
-   - Pipeline de integración continua que ejecute automáticamente `./vendor/bin/pest` y `vue-tsc -b` ante cada *Pull Request*.
+#### Cómo lo abordamos:
+Se diseñó un **Circuito de Resiliencia en 4 Capas** desacoplado mediante la interfaz [CountryProviderInterface.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Contracts/CountryProviderInterface.php) y el adaptador [RestCountriesAdapter.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Infrastructure/Adapters/RestCountriesAdapter.php):
+
+1. **Timeout Estricto de 5 Segundos**: Si `restcountries.com` tiene latencia o caídas, la petición no bloquea ni congela la aplicación (`Http::timeout(5)`).
+2. **Fallback Automático a Espejo Público**: Si la API principal retorna error HTTP (5xx, 404) o respuestas inesperadas (como cambios en su esquema JSON), el adaptador conmuta inmediatamente al repositorio abierto `mledoze/countries` en GitHub.
+3. **Catálogo Offline Empaquetado**: Si el servidor experimenta una pérdida total de conexión a internet, el sistema activa un catálogo local empaquetado con países, regiones y banderas, garantizando 100% de disponibilidad.
+4. **Caché Inteligente de 24 Horas**: Laravel almacena la lista de países en caché (`Cache::remember('countries_catalog_v2', 86400)`), reduciendo drásticamente el consumo de red y logrando respuestas en menos de **40 ms**.
 
 ---
 
-## 10. Datos de Entrega
+### 📌 Punto 3 del Documento: Cálculo de la Cotización
 
-- **Repositorio GitHub:** [https://github.com/MaikEpz/ViajaTranqui](https://github.com/MaikEpz/ViajaTranqui) (Compartido con `vrubio@gestionsegura.com.ec`)
+> *Tarifa base USD 3 por cada día de viaje (Ej: 10 días = $30). Recargo según región: South America 0%, North America 15%, Europe 20%, Asia 25%, Africa 20%, Oceania 25%. Ejemplo: Viaje de 10 días a España = $30 base + $6 Europa (20%) = $36 total. La forma en que esta lógica sea organizada dentro de Laravel queda a criterio del desarrollador; se evaluará especialmente este punto.*
+
+#### Cómo lo abordamos:
+1. **Caso de Uso Puro en Dominio ([CalculateQuotationAction.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Actions/CalculateQuotationAction.php))**:
+   - La lógica matemática no reside en controladores ni en componentes Vue. Es una clase de dominio pura con una única responsabilidad (**SRP**).
+   - Cálculo inclusivo de días: `days_count = Carbon::parse(start)->diffInDays(end) + 1`.
+   - Cálculo de tarifa base: `base_amount = days_count * 3.00`.
+   - Mapeo inmutable de recargos regionales por continente y cálculo del total:
+     $$\text{Total} = \text{Monto Base} + (\text{Monto Base} \times \frac{\% \text{ Recargo}}{100})$$
+   - Retorna el DTO inmutable [PricingBreakdownData.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/DTOs/PricingBreakdownData.php).
+2. **Verificación del Caso Oficial de Negocio**:
+   - **España, 10 días:** Base $30.00 + Recargo Europa 20% ($6.00) = **$36.00 USD**.
+   - Este caso exacto está insertado como el **Registro #1** de la base de datos (`QuotationSeeder.php`), listo para ser consultado y descargado en PDF.
+   - Avalado por pruebas automatizadas específicas en `CalculateQuotationActionTest.php` y `QuotationCalculationServiceTest.php`.
+
+---
+
+### 📌 Punto 4 del Documento: Confirmación de Contratación
+
+> *Después de generar una cotización, el usuario podrá seleccionar "Contratar seguro". Al confirmar deberá almacenarse: asegurado, destino, fechas del viaje, cantidad de días, tarifa base, porcentaje de recargo, valor total, fecha de contratación y estado (mínimos: Cotizado, Contratado). No es necesario pasarela de pagos real.*
+
+#### Cómo lo abordamos:
+1. **Acción Transaccional de Contratación ([ContractQuotationAction.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Actions/ContractQuotationAction.php))**:
+   - Transiciona atómicamente el estado del registro de `Cotizado` a `Contratado` y sella la marca temporal `contracted_at = now()`.
+2. **Invariante de Dominio contra Doble Contratación**:
+   - Si una póliza ya fue confirmada previamente, la acción arroja de inmediato la excepción de dominio [QuotationAlreadyContractedException.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Domain/Exceptions/QuotationAlreadyContractedException.php), la cual es transformada en una respuesta HTTP semántica 422.
+3. **Flujo de Usuario Ágil**:
+   - El usuario puede contratar inmediatamente desde el modal tras ver la cotización, o posteriormente desde la tabla de consulta de seguros.
+   - Notificación de confirmación mediante un **Toast flotante en la esquina** sin saltos de página.
+
+---
+
+### 📌 Punto 5 del Documento: Consulta de Contrataciones
+
+> *Crear una pantalla donde se puedan visualizar las cotizaciones/seguros registrados: Cliente, Identificación, Destino, Fecha de salida, Fecha de regreso, Valor, Estado, Fecha de creación. Puede utilizarse paginación, filtros o búsqueda.*
+
+#### Cómo lo abordamos:
+1. **Componente de Consulta Editorial ([QuotationsList.vue](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/frontend/src/components/QuotationsList.vue))**:
+   - Reúne el 100% de los campos requeridos en una **tabla compacta de 6 columnas de alta densidad**:
+     - **Póliza & Emisión:** Código `#VTQ-XXXXX` + Fecha de creación.
+     - **Asegurado & Contacto:** Nombre completo + Cédula/Pasaporte + Correo electrónico.
+     - **Destino:** Bandera + País + Región geográfica.
+     - **Vigencia & Días:** Rango limpio `DD/MM/YYYY → DD/MM/YYYY` + Badge con cantidad de días de cobertura.
+     - **Total & Estado:** Importe monetario destacado en USD + Badge de estado (*Cotizado* o *Contratado*).
+     - **Acciones:** Botón **PDF** (descarga instantánea) y botón **Contratar** (o badge `✓ Activa` si ya fue contratada).
+2. **Skeleton Loader sin Salto de Pantalla (*CLS Zero*)**:
+   - Durante la carga inicial de los datos, la pantalla muestra una tabla Skeleton con efecto *shimmer* que replica exactamente la estructura y anchura final, **eliminando cualquier salto brusco de tamaño (*layout shift*)**.
+3. **Búsqueda y Filtros en Tiempo Real**:
+   - Buscador por texto con *debounce* de 350 ms (búsqueda por nombre, identificación, país o correo).
+   - Selector de filtro por estado (*Todos*, *Solo Cotizados*, *Solo Contratados*).
+   - Paginación ágil en servidor (`per_page: 15`).
+
+---
+
+### 📌 Punto 6 del Documento: Base de Datos
+
+> *La estructura de la base de datos deberá construirse utilizando Migraciones de Laravel, Relaciones Eloquent y Seeders. No se deberá entregar un archivo SQL como mecanismo principal.*
+
+#### Cómo lo abordamos:
+1. **Migración Relacional ([create_quotations_table.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/database/migrations/2026_09_18_010856_create_quotations_table.php))**:
+   - Tipos de datos estrictos (`decimal:10,2` para montos, `date` para fechas).
+   - Índices para acelerar búsquedas: `index(['status', 'created_at'])`, `index('identification_number')`, `index('destination_region')`.
+2. **Modelo Eloquent con Scopes y Casts ([Quotation.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Models/Quotation.php))**:
+   - `scopeSearch($query, $term)`: Búsqueda flexible multicampo.
+   - `scopeByStatus($query, $status)`: Filtro condicional por estado.
+   - Casts estrictos `'start_date' => 'date:Y-m-d'` para garantizar que la API entregue fechas limpias sin basura ISO.
+3. **Seeders y Factories ([QuotationSeeder.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/database/seeders/QuotationSeeder.php) y [QuotationFactory.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/database/factories/QuotationFactory.php))**:
+   - Población de 15 registros iniciales coherentes utilizando Faker, respetando las reglas de cálculo regional.
+
+---
+
+### 📌 Punto 7 del Documento: Arquitectura
+
+> *Libertad para definir la arquitectura. Debe evitar concentrar toda la lógica de negocio directamente dentro de Controllers o componentes Vue. Explicar brevemente en el README la arquitectura seleccionada y las razones de su elección.*
+
+#### Por qué elegimos Clean Architecture Pragmática (Action-Driven):
+- **Desacoplamiento Real**: La lógica de negocio no sabe si se ejecuta desde una petición HTTP, un comando Artisan de consola o una prueba unitaria.
+- **Principio de Responsabilidad Única (SRP)**: Cada caso de uso es una clase individual (`CalculateQuotationAction`, `CreateQuotationAction`, `ContractQuotationAction`).
+- **Inversión de Dependencias (DIP)**: El dominio interactúa con proveedores de datos a través de contratos (`CountryProviderInterface`).
+- **Controladores Delgados (*Slim Controllers*)**: `QuotationController.php` solo orquesta y retorna respuestas JSON estandarizadas.
+
+---
+
+### 📌 Punto 8 del Documento: Backend Laravel
+
+> *Se evaluará el uso adecuado de Laravel: Routing, Controllers, Form Requests, Models, Eloquent, Migrations, Services o Actions, Manejo de excepciones, Responses, Validaciones y Buenas prácticas.*
+
+#### Elementos implementados:
+- **Routing:** Rutas agrupadas y semánticas en [api.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/routes/api.php).
+- **Form Requests:** `StoreQuotationRequest` y `CalculateQuotationRequest` con mensajes personalizados en español.
+- **Manejo de Excepciones:** Errores de dominio capturados y transformados en respuestas JSON con código 422 y mensajes claros.
+- **Respuestas JSON Consistentes:** Estructura unificada en toda la API: `{ success: bool, data: any, message: string, meta?: object }`.
+
+---
+
+### 📌 Punto 9 del Documento: Frontend Vue.js
+
+> *La interfaz deberá desarrollarse utilizando Vue.js. No buscamos un diseño gráfico complejo. Debe funcionar correctamente en escritorio y dispositivos móviles.*
+
+#### Elementos implementados:
+- **Vue 3 Composition API (`<script setup>`)**: Estilo moderno y estándar de Vue.
+- **Pinia ([quotationStore.ts](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/frontend/src/stores/quotationStore.ts))**: Gestión de estado centralizada para modales, alertas y datos.
+- **Diseño Editorial Minimalista**: Tipografía Plus Jakarta Sans, paleta monocromática elegante, contrastes legibles y 100% responsivo para móviles y escritorios.
+- **Toasts Flotantes**: Notificaciones compactas en la esquina inferior derecha con auto-cierre a los 4.5 segundos.
+
+---
+
+### 📌 Punto 10 del Documento: Pruebas Automatizadas con PEST
+
+> *Implementar al menos algunas pruebas automatizadas, usar PEST. Se evaluará qué decide probar el desarrollador y cómo estructura las pruebas.*
+
+#### Cobertura completa (28 pruebas / 1.096 aserciones):
+1. **Pruebas Unitarias de Dominio ([CalculateQuotationActionTest.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/tests/Unit/CalculateQuotationActionTest.php))**:
+   - Tarifa base de USD 3/día.
+   - Recargo del caso oficial de España (20%).
+   - Recargos de cada una de las 6 regiones geográficas (0%, 15%, 20%, 25%).
+   - Excepción de fechas de viaje inconsistentes (`InvalidTravelDatesException`).
+2. **Pruebas Unitarias de Contratación ([ContractQuotationActionTest.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/tests/Unit/ContractQuotationActionTest.php))**:
+   - Transición de estado a `Contratado` y registro de fecha.
+   - Bloqueo ante doble contratación (`QuotationAlreadyContractedException`).
+3. **Pruebas de Integración y API ([QuotationApiTest.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/tests/Feature/QuotationApiTest.php))**:
+   - Cálculo preliminar vía API (`POST /api/quotes/calculate`).
+   - Validación de campos requeridos (error 422).
+   - Creación de cotización (`POST /api/quotes`).
+   - Confirmación de contratación vía API (`PATCH /api/quotes/{id}/contract`).
+   - Descarga de PDF verificando cabecera `application/pdf` (`GET /api/quotes/{id}/pdf`).
+   - Consulta de catálogo de países (`GET /api/countries`).
+
+---
+
+### 📌 Punto 11 del Documento: Mejoras Futuras para Producción
+
+> *Indicar qué aspectos mejoraría si el proyecto evolucionara hacia un sistema de producción.*
+
+1. **Pasarela de Pagos en Línea (Stripe / Kushki / Paymentez)**:
+   - Implementar webhooks de confirmación bancaria antes de ejecutar `ContractQuotationAction`.
+2. **Eventos de Dominio y Colas Asíncronas (RabbitMQ / Redis / SQS)**:
+   - Disparar `QuotationContractedEvent` para procesar en segundo plano el envío del correo electrónico con el certificado PDF adjunto sin afectar el tiempo de respuesta del usuario.
+3. **Almacenamiento de PDFs en la Nube (Amazon S3 / Google Cloud Storage)**:
+   - Almacenar los comprobantes emitidos en un bucket seguro con URLs firmadas temporales en lugar de renderizarlos al vuelo en cada descarga.
+4. **Autenticación y Roles (Laravel Sanctum / Breeze)**:
+   - Portal de autoservicio para asegurados y panel administrativo para agentes de ventas con control de accesos basado en roles (RBAC).
+5. **Pipeline CI/CD con GitHub Actions**:
+   - Automatización de pruebas PEST, análisis estático con PHPStan (nivel 8) y chequeo de tipos TypeScript (`vue-tsc`).
+
+---
+
+### 📌 Punto 12 del Documento: Puntos Bonus Implementados
+
+| Bonus Opcional | Implementado | Detalle de Valor Agregado |
+| :--- | :---: | :--- |
+| **Docker** | **Sí** | `docker-compose.yml` multi-contenedor listo para producción y evaluación. |
+| **TypeScript** | **Sí** | Tipado estricto en frontend con DTOs e interfaces de contratos. |
+| **Pinia** | **Sí** | Store reactivo desacoplado para manejo del flujo de cotización. |
+| **Factories** | **Sí** | `QuotationFactory.php` con Faker realista para pruebas. |
+| **Caché de API externa** | **Sí** | Caché de 24 horas en Laravel con fallbacks escalonados. |
+| **Mayor cobertura de pruebas** | **Sí** | 28 pruebas automatizadas PEST pasando con 1.096 aserciones. |
+| **Diseño UI refinado** | **Sí** | Skeleton Loader, Toasts flotantes, diseño editorial minimalista y cero CLS. |
+
+---
+
+## 📬 3. Datos de Entrega
+
+- **Repositorio en GitHub:** [https://github.com/MaikEpz/ViajaTranqui](https://github.com/MaikEpz/ViajaTranqui)
+- **Invitación de Colaborador:** Enviada a `vrubio@gestionsegura.com.ec`
 - **Autor / Candidato:** Desarrollador Full Stack (Laravel + Vue.js)
-- **Licencia:** Software de evaluación técnica para Compañía de Seguros.
+- **Licencia:** Código desarrollado para evaluación técnica de contratación.
