@@ -39,7 +39,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useQuotationStore } from '../stores/quotationStore';
 
 const store = useQuotationStore();

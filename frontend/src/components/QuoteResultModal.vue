@@ -88,17 +88,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useQuotationStore } from '../stores/quotationStore';
+import type { Quotation } from '../types/quotation';
 
-const props = defineProps({
-  quote: {
-    type: Object,
-    default: null,
-  },
-});
+const props = defineProps<{
+  quote: Quotation | null;
+}>();
 
-defineEmits(['close']);
+defineEmits<{
+  (e: 'close'): void;
+}>();
+
 const store = useQuotationStore();
 
 function downloadPdf() {

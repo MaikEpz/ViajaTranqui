@@ -1,8 +1,26 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
+import type { Country } from '../types/country';
+import type { Quotation, QuotationPayload, PricingBreakdown } from '../types/quotation';
+import type { ApiResponse, PaginationMeta } from '../types/api';
+
+export interface QuotationState {
+  countries: Country[];
+  loadingCountries: boolean;
+  quotations: Quotation[];
+  meta: PaginationMeta;
+  loadingQuotations: boolean;
+  currentQuote: Quotation | null;
+  activeTab: 'create' | 'list';
+  searchTerm: string;
+  statusFilter: string;
+  actionLoading: boolean;
+  errorMessage: string;
+  successMessage: string;
+}
 
 export const useQuotationStore = defineStore('quotation', {
-  state: () => ({
+  state: (): QuotationState => ({
     countries: [],
     loadingCountries: false,
     quotations: [],
@@ -14,7 +32,7 @@ export const useQuotationStore = defineStore('quotation', {
     },
     loadingQuotations: false,
     currentQuote: null,
-    activeTab: 'create', // 'create' | 'list'
+    activeTab: 'create',
     searchTerm: '',
     statusFilter: '',
     actionLoading: false,
@@ -23,11 +41,11 @@ export const useQuotationStore = defineStore('quotation', {
   }),
 
   actions: {
-    async fetchCountries() {
+    async fetchCountries(): Promise<void> {
       if (this.countries.length > 0) return;
       this.loadingCountries = true;
       try {
-        const response = await api.get('/countries');
+        const response = await api.get<ApiResponse<Country[]>>('/countries');
         if (response.data.success) {
           this.countries = response.data.data;
         }
@@ -39,10 +57,14 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
-    async calculatePreview(region, startDate, endDate) {
+    async calculatePreview(
+      region: string,
+      startDate: string,
+      endDate: string
+    ): Promise<PricingBreakdown | null> {
       if (!region || !startDate || !endDate) return null;
       try {
-        const response = await api.post('/quotes/calculate', {
+        const response = await api.post<ApiResponse<PricingBreakdown>>('/quotes/calculate', {
           destination_region: region,
           start_date: startDate,
           end_date: endDate,
@@ -54,18 +76,18 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
-    async createQuotation(payload) {
+    async createQuotation(payload: QuotationPayload): Promise<Quotation> {
       this.actionLoading = true;
       this.errorMessage = '';
       try {
-        const response = await api.post('/quotes', payload);
+        const response = await api.post<ApiResponse<Quotation>>('/quotes', payload);
         if (response.data.success) {
           this.currentQuote = response.data.data;
           this.successMessage = '¡Cotización generada con éxito!';
-          // Refresh list if needed
           return this.currentQuote;
         }
-      } catch (err) {
+        throw new Error(response.data.message || 'Error al generar la cotización');
+      } catch (err: any) {
         const message = err.response?.data?.message || 'Error al generar la cotización. Verifique los campos.';
         this.errorMessage = message;
         throw err;
@@ -74,24 +96,24 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
-    async contractQuotation(quoteId) {
+    async contractQuotation(quoteId: number): Promise<Quotation> {
       this.actionLoading = true;
       this.errorMessage = '';
       try {
-        const response = await api.patch(`/quotes/${quoteId}/contract`);
+        const response = await api.patch<ApiResponse<Quotation>>(`/quotes/${quoteId}/contract`);
         if (response.data.success) {
           if (this.currentQuote && this.currentQuote.id === quoteId) {
             this.currentQuote = response.data.data;
           }
-          // Update item in quotations list if present
-          const index = this.quotations.findIndex(q => q.id === quoteId);
+          const index = this.quotations.findIndex((q) => q.id === quoteId);
           if (index !== -1) {
             this.quotations[index] = response.data.data;
           }
           this.successMessage = '¡El seguro ha sido contratado exitosamente!';
           return response.data.data;
         }
-      } catch (err) {
+        throw new Error(response.data.message || 'No se pudo contratar el seguro');
+      } catch (err: any) {
         const message = err.response?.data?.message || 'No se pudo contratar el seguro.';
         this.errorMessage = message;
         throw err;
@@ -100,7 +122,7 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
-    async fetchQuotations(page = 1) {
+    async fetchQuotations(page = 1): Promise<void> {
       this.loadingQuotations = true;
       try {
         const params = {
@@ -108,10 +130,12 @@ export const useQuotationStore = defineStore('quotation', {
           search: this.searchTerm || undefined,
           status: this.statusFilter || undefined,
         };
-        const response = await api.get('/quotes', { params });
+        const response = await api.get<ApiResponse<Quotation[]>>('/quotes', { params });
         if (response.data.success) {
           this.quotations = response.data.data;
-          this.meta = response.data.meta;
+          if (response.data.meta) {
+            this.meta = response.data.meta;
+          }
         }
       } catch (err) {
         console.error('Error fetching quotations:', err);
@@ -121,12 +145,12 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
-    downloadPdf(quoteId) {
+    downloadPdf(quoteId: number): void {
       const url = `${api.defaults.baseURL}/quotes/${quoteId}/pdf`;
       window.open(url, '_blank');
     },
 
-    clearAlerts() {
+    clearAlerts(): void {
       this.errorMessage = '';
       this.successMessage = '';
     },

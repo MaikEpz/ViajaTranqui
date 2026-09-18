@@ -154,47 +154,47 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue';
 import { useQuotationStore } from '../stores/quotationStore';
 
 const store = useQuotationStore();
 
-let searchDebounceTimeout = null;
+let searchDebounceTimeout: any = null;
 
 onMounted(() => {
   store.fetchQuotations();
 });
 
-function onSearchInput() {
+function onSearchInput(): void {
   clearTimeout(searchDebounceTimeout);
   searchDebounceTimeout = setTimeout(() => {
     store.fetchQuotations(1);
   }, 350);
 }
 
-function onStatusFilterChange() {
+function onStatusFilterChange(): void {
   store.fetchQuotations(1);
 }
 
-function changePage(page) {
+function changePage(page: number): void {
   store.fetchQuotations(page);
 }
 
-async function handleContract(id) {
+async function handleContract(id: number): Promise<void> {
   if (confirm('¿Desea confirmar la contratación de este seguro de viaje?')) {
     await store.contractQuotation(id);
   }
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr: string | null): string {
   if (!dateStr) return '-';
   const parts = dateStr.split('-');
   if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
   return dateStr;
 }
 
-function formatDateTime(dateTimeStr) {
+function formatDateTime(dateTimeStr: string | null): string {
   if (!dateTimeStr) return '-';
   const d = new Date(dateTimeStr);
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });

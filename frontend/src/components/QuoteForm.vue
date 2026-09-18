@@ -254,18 +254,23 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
 import { useQuotationStore } from '../stores/quotationStore';
+import type { Country } from '../types/country';
+import type { PricingBreakdown, Quotation, QuotationPayload } from '../types/quotation';
 
-const emit = defineEmits(['quoteCreated']);
+const emit = defineEmits<{
+  (e: 'quoteCreated', quotation: Quotation): void;
+}>();
+
 const store = useQuotationStore();
 
 const todayDate = new Date().toISOString().split('T')[0];
 
-const selectedCountryCode = ref('');
-const selectedCountry = ref(null);
-const preview = ref(null);
+const selectedCountryCode = ref<string>('');
+const selectedCountry = ref<Country | null>(null);
+const preview = ref<PricingBreakdown | null>(null);
 
 const form = reactive({
   first_name: '',
@@ -277,7 +282,7 @@ const form = reactive({
   end_date: '',
 });
 
-const errors = reactive({
+const errors = reactive<Record<string, string>>({
   first_name: '',
   last_name: '',
   identification_number: '',
@@ -293,7 +298,7 @@ onMounted(async () => {
 });
 
 function onCountryChange() {
-  selectedCountry.value = store.countries.find(c => c.code === selectedCountryCode.value) || null;
+  selectedCountry.value = store.countries.find((c: Country) => c.code === selectedCountryCode.value) || null;
   triggerRecalculation();
 }
 
@@ -313,9 +318,9 @@ async function triggerRecalculation() {
   }
 }
 
-function validateForm() {
+function validateForm(): boolean {
   let valid = true;
-  Object.keys(errors).forEach(k => errors[k] = '');
+  Object.keys(errors).forEach((k) => (errors[k] = ''));
 
   if (!form.first_name.trim()) {
     errors.first_name = 'Ingrese los nombres del asegurado.';
@@ -365,11 +370,17 @@ function validateForm() {
   return valid;
 }
 
-async function handleSubmit() {
-  if (!validateForm()) return;
+async function handleSubmit(): Promise<void> {
+  if (!validateForm() || !selectedCountry.value) return;
 
-  const payload = {
-    ...form,
+  const payload: QuotationPayload = {
+    first_name: form.first_name,
+    last_name: form.last_name,
+    identification_number: form.identification_number,
+    email: form.email,
+    birth_date: form.birth_date,
+    start_date: form.start_date,
+    end_date: form.end_date,
     destination_country: selectedCountry.value.name,
     destination_country_code: selectedCountry.value.code,
     destination_region: selectedCountry.value.region,
@@ -380,7 +391,7 @@ async function handleSubmit() {
     const quotation = await store.createQuotation(payload);
     emit('quoteCreated', quotation);
   } catch (err) {
-    // Errors handled in store
+    // Handled in store
   }
 }
 </script>

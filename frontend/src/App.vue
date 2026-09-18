@@ -41,22 +41,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import { useQuotationStore } from './stores/quotationStore';
 import Navbar from './components/Navbar.vue';
 import QuoteForm from './components/QuoteForm.vue';
 import QuoteResultModal from './components/QuoteResultModal.vue';
 import QuotationsList from './components/QuotationsList.vue';
+import type { Quotation } from './types/quotation';
 
 const store = useQuotationStore();
-const modalQuote = ref(null);
+const modalQuote = ref<Quotation | null>(null);
 
-function onQuoteCreated(quotation) {
+function onQuoteCreated(quotation: Quotation): void {
   modalQuote.value = quotation;
 }
 
-function closeModal() {
+function closeModal(): void {
   modalQuote.value = null;
 }
 </script>
