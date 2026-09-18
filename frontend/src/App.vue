@@ -3,7 +3,7 @@
     <Navbar />
 
     <main class="container main-content">
-      <!-- Global Alerts -->
+      <!-- Alertas Globales -->
       <div v-if="store.errorMessage" class="alert alert-danger">
         <span>⚠️ {{ store.errorMessage }}</span>
         <button class="alert-close" @click="store.clearAlerts">✕</button>
@@ -14,18 +14,20 @@
         <button class="alert-close" @click="store.clearAlerts">✕</button>
       </div>
 
-      <!-- Tab 1: Quote Form -->
+      <!-- Pestaña 1: Nueva Cotización de Viaje -->
       <section v-if="store.activeTab === 'create'">
-        <QuoteForm @quoteCreated="onQuoteCreated" />
+        <!-- Hero de Viajes con Sugerencias y Beneficios -->
+        <TravelHero @selectDestination="onSelectDestination" />
+        <QuoteForm ref="quoteFormRef" @quoteCreated="onQuoteCreated" />
       </section>
 
-      <!-- Tab 2: Quotations List -->
+      <!-- Pestaña 2: Listado y Gestión de Seguros -->
       <section v-else-if="store.activeTab === 'list'">
         <QuotationsList />
       </section>
     </main>
 
-    <!-- Modal for Result -->
+    <!-- Modal de Resultado / Voucher de Póliza -->
     <QuoteResultModal
       v-if="modalQuote"
       :quote="modalQuote"
@@ -34,8 +36,14 @@
 
     <footer class="app-footer">
       <div class="container footer-container">
-        <p>© 2026 ViajaTranqui Seguros - Sistema de Cotización y Venta de Seguro de Viaje</p>
-        <p class="footer-sub">Desarrollado con Laravel 11, Vue 3, MySQL y Docker</p>
+        <div class="footer-brand-row">
+          <span class="footer-logo">✈️ ViajaTranqui Seguros</span>
+          <span class="footer-divider">•</span>
+          <span>Protección médica internacional 24/7 en más de 190 países</span>
+        </div>
+        <p class="footer-sub">
+          Sistema de Cotización y Venta de Seguro de Viaje • Laravel 11 + Vue 3 + TypeScript + Docker
+        </p>
       </div>
     </footer>
   </div>
@@ -45,6 +53,7 @@
 import { ref } from 'vue';
 import { useQuotationStore } from './stores/quotationStore';
 import Navbar from './components/Navbar.vue';
+import TravelHero from './components/TravelHero.vue';
 import QuoteForm from './components/QuoteForm.vue';
 import QuoteResultModal from './components/QuoteResultModal.vue';
 import QuotationsList from './components/QuotationsList.vue';
@@ -52,6 +61,13 @@ import type { Quotation } from './types/quotation';
 
 const store = useQuotationStore();
 const modalQuote = ref<Quotation | null>(null);
+const quoteFormRef = ref<InstanceType<typeof QuoteForm> | null>(null);
+
+function onSelectDestination(countryCode: string): void {
+  if (quoteFormRef.value) {
+    quoteFormRef.value.selectCountryByCode(countryCode);
+  }
+}
 
 function onQuoteCreated(quotation: Quotation): void {
   modalQuote.value = quotation;
@@ -71,32 +87,55 @@ function closeModal(): void {
 
 .main-content {
   flex: 1;
-  padding-top: 32px;
-  padding-bottom: 48px;
+  padding-top: 36px;
+  padding-bottom: 56px;
 }
 
 .alert-close {
   background: transparent;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   cursor: pointer;
   color: inherit;
-  margin-left: 12px;
+  margin-left: 14px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+.alert-close:hover {
+  opacity: 1;
 }
 
 .app-footer {
   background-color: #ffffff;
   border-top: 1px solid var(--border-color);
-  padding: 24px 0;
+  padding: 30px 0;
   margin-top: auto;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
 }
 
+.footer-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--color-accent);
+  flex-wrap: wrap;
+}
+
+.footer-logo {
+  color: var(--color-primary);
+}
+
+.footer-divider {
+  color: #cbd5e1;
+}
+
 .footer-sub {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: #94a3b8;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 </style>
