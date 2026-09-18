@@ -31,7 +31,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, pdo_mysql, sqlite3, pdo_sqlite, bcmath, gd, zip, intl, curl
+          extensions: mbstring, xml, dom, pdo_mysql, sqlite3, pdo_sqlite, bcmath, gd, zip, intl, curl
           coverage: none
 
       - name: Validate composer.json and composer.lock
@@ -74,7 +74,7 @@ jobs:
           DB_PASSWORD: secret
 
       - name: Execute Automated Tests with PEST
-        run: ./vendor/bin/pest
+        run: php artisan test
         working-directory: backend
         env:
           DB_CONNECTION: mysql
