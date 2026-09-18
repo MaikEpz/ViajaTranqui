@@ -183,6 +183,7 @@ export const useQuotationStore = defineStore('quotation', {
       try {
         const params = {
           page,
+          per_page: 15,
           search: this.searchTerm || undefined,
           status: this.statusFilter || undefined,
         };

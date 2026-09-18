@@ -35,7 +35,7 @@ class QuotationSeeder extends Seeder
             'status'                   => 'Cotizado',
         ]);
 
-        // Generación de 15 cotizaciones aleatorias para la pantalla de consultas
-        Quotation::factory()->count(15)->create();
+        // Generación de 14 cotizaciones aleatorias para la pantalla de consultas (total 15 junto a Carlos Mendoza)
+        Quotation::factory()->count(14)->create();
     }
 }

@@ -8,18 +8,14 @@
           Historial de cotizaciones emitidas y pólizas de viaje contratadas.
         </p>
       </div>
-
-      <button class="btn btn-primary" @click="store.openQuoteModal()">
-        + Nueva Cotización
-      </button>
     </div>
 
     <!-- Panel de Métricas / KPIs Minimalista -->
     <div class="kpi-grid">
       <div class="kpi-card">
-        <span class="kpi-label">Total Cotizaciones</span>
+        <span class="kpi-label">Total Registros</span>
         <div class="kpi-value">{{ store.meta.total }}</div>
-        <span class="kpi-sub">Emisiones registradas</span>
+        <span class="kpi-sub">Pólizas en base de datos</span>
       </div>
 
       <div class="kpi-card">
@@ -77,53 +73,76 @@
       <p>No existen registros que coincidan con el criterio de búsqueda ingresado.</p>
     </div>
 
-    <!-- Tabla Editorial de Cotizaciones -->
-    <div v-else class="table-responsive">
+    <!-- Indicador de desplazamiento horizontal en pantallas estrechas -->
+    <div v-if="store.quotations.length > 0" class="scroll-hint-bar">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+      </svg>
+      <span>Desliza la tabla hacia la derecha para ver todas las columnas</span>
+    </div>
+
+    <!-- Tabla Editorial Compacta de Cotizaciones -->
+    <div v-if="!store.loadingQuotations && store.quotations.length > 0" class="table-responsive">
       <table class="quotes-table">
         <thead>
           <tr>
-            <th>Ref.</th>
-            <th>Asegurado</th>
-            <th>Identificación</th>
-            <th>Destino</th>
-            <th>Fechas de Cobertura</th>
-            <th>Días</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th>Emisión</th>
-            <th class="text-right">Acciones</th>
+            <th class="th-ref">Póliza & Emisión</th>
+            <th class="th-client">Asegurado & Contacto</th>
+            <th class="th-dest">Destino</th>
+            <th class="th-dates">Vigencia & Días</th>
+            <th class="th-amount">Total & Estado</th>
+            <th class="th-actions text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="quote in store.quotations" :key="quote.id" class="quote-row">
-            <td class="ref-col">
-              <code>#VTQ-{{ String(quote.id).padStart(5, '0') }}</code>
+            <!-- Columna 1: Referencia y Fecha de Emisión -->
+            <td class="td-ref">
+              <span class="ref-badge">#VTQ-{{ String(quote.id).padStart(5, '0') }}</span>
+              <span class="cell-sub date-sub">{{ formatDateTime(quote.created_at) }}</span>
             </td>
-            <td>
+
+            <!-- Columna 2: Asegurado, Cédula/Pasaporte y Email -->
+            <td class="td-client">
               <div class="client-name">{{ quote.first_name }} {{ quote.last_name }}</div>
-              <div class="client-email">{{ quote.email }}</div>
+              <div class="client-meta">
+                <span class="client-id">ID: {{ quote.identification_number }}</span>
+                <span class="meta-dot">·</span>
+                <span class="client-email" :title="quote.email">{{ quote.email }}</span>
+              </div>
             </td>
-            <td>{{ quote.identification_number }}</td>
-            <td>
+
+            <!-- Columna 3: Destino y Región -->
+            <td class="td-dest">
               <div class="destination-cell">
                 <img
                   v-if="quote.destination_flag_url"
                   :src="quote.destination_flag_url"
                   :alt="quote.destination_country"
                   class="country-flag"
+                  loading="lazy"
                 />
-                <div>
+                <div class="destination-text">
                   <span class="country-text">{{ quote.destination_country }}</span>
                   <span class="region-sub">{{ quote.destination_region }}</span>
                 </div>
               </div>
             </td>
-            <td class="dates-cell">
-              {{ formatDate(quote.start_date) }} — {{ formatDate(quote.end_date) }}
+
+            <!-- Columna 4: Fechas y Cantidad de Días -->
+            <td class="td-dates">
+              <div class="dates-range">
+                {{ formatDate(quote.start_date) }} — {{ formatDate(quote.end_date) }}
+              </div>
+              <span class="days-badge">{{ quote.days_count }} días de cobertura</span>
             </td>
-            <td>{{ quote.days_count }} d</td>
-            <td><strong>${{ Number(quote.total_amount).toFixed(2) }}</strong></td>
-            <td>
+
+            <!-- Columna 5: Monto Total y Estado -->
+            <td class="td-amount">
+              <div class="amount-main">
+                ${{ Number(quote.total_amount).toFixed(2) }} <small>USD</small>
+              </div>
               <span
                 class="badge"
                 :class="quote.status === 'Contratado' ? 'badge-contracted' : 'badge-quoted'"
@@ -131,24 +150,40 @@
                 {{ quote.status }}
               </span>
             </td>
-            <td class="date-created">{{ formatDateTime(quote.created_at) }}</td>
-            <td class="actions-cell text-right">
-              <button
-                class="btn btn-secondary btn-sm action-btn"
-                title="Descargar comprobante en PDF"
-                @click="store.downloadPdf(quote.id)"
-              >
-                PDF
-              </button>
 
-              <button
-                v-if="quote.status === 'Cotizado'"
-                class="btn btn-primary btn-sm action-btn"
-                title="Confirmar contratación"
-                @click="handleContract(quote.id)"
-              >
-                Contratar
-              </button>
+            <!-- Columna 6: Acciones -->
+            <td class="td-actions text-right">
+              <div class="actions-group">
+                <button
+                  class="btn btn-secondary btn-sm action-btn pdf-btn"
+                  title="Descargar comprobante en PDF"
+                  @click="store.downloadPdf(quote.id)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                  </svg>
+                  PDF
+                </button>
+
+                <button
+                  v-if="quote.status === 'Cotizado'"
+                  class="btn btn-primary btn-sm action-btn contract-btn"
+                  title="Confirmar contratación"
+                  @click="handleContract(quote.id)"
+                >
+                  Contratar
+                </button>
+
+                <span v-else class="status-confirmed-tag" title="Póliza contratada y vigente">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Activa
+                </span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -235,7 +270,7 @@ function formatDateTime(dateTimeStr: string | null): string {
   background: #ffffff;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
-  padding: 40px;
+  padding: 36px 40px;
   opacity: 0;
   transform: translateY(24px);
   animation: listFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -256,7 +291,7 @@ function formatDateTime(dateTimeStr: string | null): string {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .editorial-category {
@@ -287,13 +322,13 @@ function formatDateTime(dateTimeStr: string | null): string {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 18px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .kpi-card {
   background-color: var(--bg-subtle);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 22px;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
 }
@@ -330,7 +365,7 @@ function formatDateTime(dateTimeStr: string | null): string {
 .filters-bar {
   display: flex;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .search-box {
   flex: 1;
@@ -339,54 +374,131 @@ function formatDateTime(dateTimeStr: string | null): string {
   width: 200px;
 }
 
-/* Tabla */
+/* Indicador de scroll para dispositivos estrechos */
+.scroll-hint-bar {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #717171;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  background-color: #f4f4f5;
+  border-radius: var(--radius-sm);
+}
+
+/* Tabla Compacta */
 .table-responsive {
   overflow-x: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   background: #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 #f4f4f5;
 }
+
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: #f4f4f5;
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
 .quotes-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.88rem;
+  table-layout: auto;
 }
+
 .quotes-table th {
   background-color: var(--bg-subtle);
   color: #717171;
   font-weight: 700;
-  padding: 14px 18px;
+  padding: 13px 18px;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
 .quotes-table td {
-  padding: 16px 18px;
+  padding: 14px 18px;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
 }
+
 .quote-row:hover {
   background-color: #fafafa;
 }
 
-.ref-col code {
+/* Columna 1: Póliza */
+.td-ref {
+  white-space: nowrap;
+}
+.ref-badge {
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 800;
   color: #111111;
+  display: block;
+}
+.cell-sub {
+  font-size: 0.74rem;
+  color: #888888;
+  display: block;
+  margin-top: 2px;
 }
 
+/* Columna 2: Asegurado */
+.td-client {
+  min-width: 220px;
+}
 .client-name {
   font-weight: 700;
   color: #111111;
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+.client-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #717171;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.client-id {
+  font-weight: 600;
+  color: #444444;
+}
+.meta-dot {
+  color: #d4d4d8;
 }
 .client-email {
-  font-size: 0.78rem;
   color: #717171;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* Columna 3: Destino */
+.td-dest {
+  white-space: nowrap;
+}
 .destination-cell {
   display: flex;
   align-items: center;
@@ -397,33 +509,95 @@ function formatDateTime(dateTimeStr: string | null): string {
   height: 16px;
   object-fit: cover;
   border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+.destination-text {
+  display: flex;
+  flex-direction: column;
 }
 .country-text {
-  font-weight: 600;
+  font-weight: 700;
   color: #111111;
+  font-size: 0.86rem;
+  line-height: 1.2;
 }
 .region-sub {
   font-size: 0.72rem;
   color: #717171;
-  display: block;
+  margin-top: 1px;
 }
 
-.dates-cell {
-  font-size: 0.82rem;
-  color: #444444;
+/* Columna 4: Vigencia & Días */
+.td-dates {
   white-space: nowrap;
 }
+.dates-range {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #222222;
+  line-height: 1.25;
+}
+.days-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #717171;
+  background-color: #f4f4f5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+}
 
-.date-created {
-  font-size: 0.8rem;
+/* Columna 5: Monto & Estado */
+.td-amount {
+  white-space: nowrap;
+}
+.amount-main {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #111111;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+.amount-main small {
+  font-size: 0.7rem;
+  font-weight: 600;
   color: #717171;
 }
 
-.actions-cell {
+/* Columna 6: Acciones */
+.td-actions {
   white-space: nowrap;
 }
+.actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
 .action-btn {
-  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 11px;
+}
+.pdf-btn svg {
+  stroke-width: 2.2;
+}
+.status-confirmed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #15803d;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
 }
 
 /* Paginación */
@@ -455,11 +629,21 @@ function formatDateTime(dateTimeStr: string | null): string {
   margin-bottom: 6px;
 }
 
+@media (max-width: 1024px) {
+  .scroll-hint-bar {
+    display: flex;
+  }
+}
+
 @media (max-width: 900px) {
+  .list-card {
+    padding: 24px 20px;
+  }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 640px) {
   .kpi-grid {
     grid-template-columns: 1fr;

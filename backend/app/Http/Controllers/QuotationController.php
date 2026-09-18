@@ -77,7 +77,7 @@ class QuotationController extends Controller
     {
         $search = $request->query('search');
         $status = $request->query('status');
-        $perPage = min((int) $request->query('per_page', 10), 100);
+        $perPage = min((int) $request->query('per_page', 15), 100);
 
         $quotations = Quotation::query()
             ->search($search)
