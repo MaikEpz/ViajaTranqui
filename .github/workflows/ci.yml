@@ -53,6 +53,8 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+          mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs
+          chmod -R 777 storage bootstrap/cache
         working-directory: backend
         env:
           DB_CONNECTION: mysql
