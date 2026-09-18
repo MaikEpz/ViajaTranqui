@@ -74,7 +74,7 @@ jobs:
           DB_PASSWORD: secret
 
       - name: Execute Automated Tests with PEST
-        run: php artisan test --verbose
+        run: php artisan test
         working-directory: backend
 
   frontend-build:
