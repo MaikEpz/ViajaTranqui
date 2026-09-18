@@ -23,7 +23,8 @@ export interface QuotationState {
   meta: PaginationMeta;
   loadingQuotations: boolean;
   currentQuote: Quotation | null;
-  activeTab: 'home' | 'checkout' | 'list';
+  activeTab: 'home' | 'list';
+  isQuoteModalOpen: boolean;
   tripDraft: TripDraft;
   searchTerm: string;
   statusFilter: string;
@@ -46,6 +47,7 @@ export const useQuotationStore = defineStore('quotation', {
     loadingQuotations: false,
     currentQuote: null,
     activeTab: 'home',
+    isQuoteModalOpen: false,
     tripDraft: {
       countryCode: '',
       startDate: '',
@@ -218,17 +220,31 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     /**
-     * Transiciona a la vista de checkout y configuración de póliza.
+     * Abre el modal emergente para completar la cotización sobre la pantalla difuminada.
      */
-    goToCheckout(countryCode?: string, start?: string, end?: string): void {
+    openQuoteModal(countryCode?: string, start?: string, end?: string): void {
       if (!this.tripDraft) {
         this.tripDraft = { countryCode: '', startDate: '', endDate: '' };
       }
       if (countryCode) this.tripDraft.countryCode = countryCode;
       if (start) this.tripDraft.startDate = start;
       if (end) this.tripDraft.endDate = end;
-      this.activeTab = 'checkout';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.isQuoteModalOpen = true;
+    },
+
+    /**
+     * Cierra el modal emergente de cotización.
+     */
+    closeQuoteModal(): void {
+      this.isQuoteModalOpen = false;
+      this.currentQuote = null;
+    },
+
+    /**
+     * Alias compatible hacia el modal de emisión.
+     */
+    goToCheckout(countryCode?: string, start?: string, end?: string): void {
+      this.openQuoteModal(countryCode, start, end);
     },
 
     /**
@@ -236,6 +252,7 @@ export const useQuotationStore = defineStore('quotation', {
      */
     goHome(): void {
       this.activeTab = 'home';
+      this.closeQuoteModal();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 

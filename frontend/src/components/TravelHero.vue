@@ -147,8 +147,8 @@ function emitDates() {
 }
 
 function onCotizarClick() {
-  // Transiciona inmediatamente a la nueva vista de emisión (Checkout)
-  store.goToCheckout(selectedCode.value, startDate.value, endDate.value);
+  // Abre el pop-up emergente sobre la pantalla difuminada
+  store.openQuoteModal(selectedCode.value, startDate.value, endDate.value);
 }
 </script>
 

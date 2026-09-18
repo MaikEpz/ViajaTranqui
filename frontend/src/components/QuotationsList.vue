@@ -9,7 +9,7 @@
         </p>
       </div>
 
-      <button class="btn btn-primary" @click="store.goHome()">
+      <button class="btn btn-primary" @click="store.openQuoteModal()">
         + Nueva Cotización
       </button>
     </div>

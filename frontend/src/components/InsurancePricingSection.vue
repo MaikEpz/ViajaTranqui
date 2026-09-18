@@ -1,134 +1,45 @@
 <template>
-  <div class="insurance-pricing-section">
-    <div class="pricing-section-header">
-      <span class="editorial-tag">Transparencia Total</span>
-      <h2 class="section-title">Estructura de Tarifas y Coberturas</h2>
-      <p class="section-subtitle">
-        Cálculo actuarial transparente basado en los días efectivos de estancia y la matriz oficial de recargos por continente.
-      </p>
+  <div class="minimal-pricing-bar">
+    <div class="pricing-header-compact">
+      <span class="pricing-label">Estructura de Tarifas</span>
+      <span class="pricing-sub">Tarifa base diaria computada por días continuos y recargo regional oficial</span>
     </div>
 
-    <!-- 3 Columnas Minimalistas -->
-    <div class="pricing-columns-grid">
-      <!-- Columna 1: Tarifa Base -->
-      <div class="pricing-card">
-        <div class="card-inner-tag">Tarifa Base Diaria</div>
-        <div class="huge-rate">
-          <span class="currency">USD</span> $3.00
-          <span class="per-unit">/ día</span>
-        </div>
-        <p class="rate-desc">
-          Aplicable a cada día de viaje, computado de manera inclusiva desde la fecha de salida hasta la fecha de retorno.
-        </p>
-        <ul class="rate-checklist">
-          <li>✓ Días completos de cobertura continua</li>
-          <li>✓ Sin costos ocultos de emisión</li>
-          <li>✓ Tarifa fija internacional</li>
-        </ul>
-      </div>
-
-      <!-- Columna 2: Recargos Continentales -->
-      <div class="pricing-card">
-        <div class="card-inner-tag">Matriz por Continente</div>
-        <div class="surcharge-table">
-          <div class="surcharge-row">
-            <span>América del Sur</span>
-            <span class="rate-pill pill-zero">0% (Base)</span>
-          </div>
-          <div class="surcharge-row">
-            <span>Norteamérica</span>
-            <span class="rate-pill">+15%</span>
-          </div>
-          <div class="surcharge-row highlight-schengen">
-            <span>Europa (Schengen)</span>
-            <span class="rate-pill pill-europe">+20%</span>
-          </div>
-          <div class="surcharge-row">
-            <span>África</span>
-            <span class="rate-pill">+20%</span>
-          </div>
-          <div class="surcharge-row">
-            <span>Asia & Oceanía</span>
-            <span class="rate-pill">+25%</span>
-          </div>
+    <div class="pricing-body-compact">
+      <!-- Tarifa Base Diaria Minimalista -->
+      <div class="rate-base-box">
+        <span class="box-micro-label">TARIFA BASE</span>
+        <div class="box-rate-val">
+          <span class="currency">USD</span> $3.00 <span class="unit">/ día</span>
         </div>
       </div>
 
-      <!-- Columna 3: Simulador / Ejemplo de Negocio -->
-      <div class="pricing-card card-highlight">
-        <div class="card-inner-tag">Simulación Oficial</div>
-        
-        <div v-if="livePreview" class="simulation-content">
-          <div class="sim-country">
-            <span class="sim-flag">✈️</span>
-            <strong>{{ liveCountryName || 'Destino seleccionado' }}</strong>
+      <div class="bar-divider"></div>
+
+      <!-- Matriz por Continente Minimalista en Pills Horizontales -->
+      <div class="rate-surcharges-box">
+        <span class="box-micro-label">RECARGOS POR CONTINENTE</span>
+        <div class="surcharges-pills">
+          <div class="s-pill">
+            <span class="s-name">América del Sur</span>
+            <span class="s-pct">0%</span>
           </div>
-          <div class="sim-days">{{ livePreview.days_count }} días calculados</div>
-          
-          <div class="sim-total-box">
-            <span class="sim-total-label">VALOR ESTIMADO</span>
-            <div class="sim-total-amount">${{ livePreview.total_amount.toFixed(2) }} <small>USD</small></div>
+          <div class="s-pill">
+            <span class="s-name">Norteamérica</span>
+            <span class="s-pct">+15%</span>
           </div>
-
-          <div class="sim-math">
-            Base ${{ livePreview.base_amount.toFixed(2) }} + Recargo ${{ livePreview.surcharge_amount.toFixed(2) }}
+          <div class="s-pill pill-europe">
+            <span class="s-name">Europa</span>
+            <span class="s-pct">+20%</span>
           </div>
-        </div>
-
-        <div v-else class="simulation-content">
-          <div class="sim-country">
-            <span class="sim-flag">🇪🇸</span>
-            <strong>Ejemplo: España (Europa)</strong>
+          <div class="s-pill">
+            <span class="s-name">África</span>
+            <span class="s-pct">+20%</span>
           </div>
-          <div class="sim-days">10 días de estancia</div>
-
-          <div class="sim-total-box">
-            <span class="sim-total-label">TOTAL NETO</span>
-            <div class="sim-total-amount">$36.00 <small>USD</small></div>
+          <div class="s-pill">
+            <span class="s-name">Asia / Oceanía</span>
+            <span class="s-pct">+25%</span>
           </div>
-
-          <div class="sim-math">
-            Base: 10d × $3 = $30.00 | Recargo 20%: $6.00
-          </div>
-        </div>
-
-        <button type="button" class="btn btn-primary btn-sim-cta" @click="$emit('requestQuote')">
-          Cotizar con esta tarifa ➔
-        </button>
-      </div>
-    </div>
-
-    <!-- Garantías Incluidas Strip -->
-    <div class="included-guarantees-strip">
-      <div class="guarantee-item">
-        <span class="g-icon">🛡️</span>
-        <div class="g-text">
-          <strong>Hasta $50,000 USD</strong>
-          <span>Gastos médicos y hospitalización</span>
-        </div>
-      </div>
-
-      <div class="guarantee-item">
-        <span class="g-icon">🏥</span>
-        <div class="g-text">
-          <strong>Repatriación 24/7</strong>
-          <span>Sanitaria y funeraria sin límites</span>
-        </div>
-      </div>
-
-      <div class="guarantee-item">
-        <span class="g-icon">🧳</span>
-        <div class="g-text">
-          <strong>Pérdida de Equipaje</strong>
-          <span>Compensación por extravío o demora</span>
-        </div>
-      </div>
-
-      <div class="guarantee-item">
-        <span class="g-icon">🇪🇺</span>
-        <div class="g-text">
-          <strong>Certificado Schengen</strong>
-          <span>Válido para consulados y visados</span>
         </div>
       </div>
     </div>
@@ -136,277 +47,148 @@
 </template>
 
 <script setup lang="ts">
-import type { PricingBreakdown } from '../types/quotation';
-
-defineProps<{
-  livePreview?: PricingBreakdown | null;
-  liveCountryName?: string;
-}>();
-
-defineEmits<{
-  (e: 'requestQuote'): void;
-}>();
+// Sección puramente minimalista de tarifas informativas
 </script>
 
 <style scoped>
-.insurance-pricing-section {
-  margin-top: 56px;
-  margin-bottom: 64px;
-}
-
-.pricing-section-header {
-  margin-bottom: 32px;
-}
-
-.editorial-tag {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #717171;
-  margin-bottom: 6px;
-}
-
-.section-title {
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #111111;
-  line-height: 1.2;
-}
-
-.section-subtitle {
-  font-size: 0.98rem;
-  color: #717171;
-  max-width: 650px;
-  margin-top: 6px;
-  line-height: 1.5;
-}
-
-/* Grilla de Columnas */
-.pricing-columns-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 36px;
-}
-
-.pricing-card {
+.minimal-pricing-bar {
+  margin-top: 48px;
+  margin-bottom: 48px;
   background-color: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
+  padding: 24px 32px;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.pricing-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
-.card-highlight {
-  background-color: var(--bg-subtle);
-  border-color: #111111;
-}
-
-.card-inner-tag {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #717171;
-  margin-bottom: 14px;
-}
-
-.huge-rate {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #111111;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  margin-bottom: 12px;
-}
-.huge-rate .currency {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #717171;
-}
-.huge-rate .per-unit {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #717171;
-}
-
-.rate-desc {
-  font-size: 0.88rem;
-  color: #717171;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-
-.rate-checklist {
-  list-style: none;
+.pricing-header-compact {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #222222;
-}
-
-/* Tabla de Recargos */
-.surcharge-table {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 6px;
-}
-.surcharge-row {
-  display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #222222;
-  padding-bottom: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-subtle);
-}
-.surcharge-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.rate-pill {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  background: #f4f4f5;
-  color: #111111;
-}
-.pill-zero {
-  background: #f0fdf4;
-  color: #15803d;
-}
-.pill-europe {
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-/* Simulación */
-.simulation-content {
-  display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 20px;
 }
 
-.sim-country {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.pricing-label {
   font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: #111111;
 }
-.sim-flag {
-  font-size: 1.2rem;
-}
 
-.sim-days {
+.pricing-sub {
   font-size: 0.82rem;
   color: #717171;
+  font-weight: 500;
 }
 
-.sim-total-box {
-  background-color: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  text-align: center;
-  margin: 6px 0;
+.pricing-body-compact {
+  display: flex;
+  align-items: center;
+  gap: 32px;
 }
-.sim-total-label {
+
+.rate-base-box {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.box-micro-label {
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #717171;
+  margin-bottom: 4px;
 }
-.sim-total-amount {
-  font-size: 1.9rem;
+
+.box-rate-val {
+  font-size: 1.85rem;
   font-weight: 800;
   color: #111111;
   letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-top: 2px;
+  line-height: 1;
 }
-.sim-total-amount small {
-  font-size: 0.95rem;
+
+.box-rate-val .currency {
+  font-size: 0.9rem;
   color: #717171;
+  font-weight: 600;
 }
 
-.sim-math {
-  font-size: 0.75rem;
+.box-rate-val .unit {
+  font-size: 0.82rem;
   color: #717171;
-  text-align: center;
+  font-weight: 500;
 }
 
-.btn-sim-cta {
-  width: 100%;
-  margin-top: auto;
-  padding: 14px 20px;
-  font-size: 0.92rem;
+.bar-divider {
+  width: 1px;
+  height: 44px;
+  background-color: var(--border-subtle);
+  flex-shrink: 0;
 }
 
-/* Franja de Garantías */
-.included-guarantees-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 24px 32px;
-}
-
-.guarantee-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.g-icon {
-  font-size: 1.5rem;
-}
-.g-text {
+.rate-surcharges-box {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
-.g-text strong {
-  font-size: 0.85rem;
+
+.surcharges-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.s-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  transition: border-color 0.15s ease;
+}
+
+.s-pill:hover {
+  border-color: #111111;
+}
+
+.s-name {
+  color: #444444;
+  font-weight: 500;
+}
+
+.s-pct {
   color: #111111;
   font-weight: 700;
-}
-.g-text span {
-  font-size: 0.75rem;
-  color: #717171;
-}
-
-@media (max-width: 960px) {
-  .pricing-columns-grid {
-    grid-template-columns: 1fr;
-  }
-  .included-guarantees-strip {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  font-size: 0.78rem;
+  background: #ffffff;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
 }
 
-@media (max-width: 600px) {
-  .included-guarantees-strip {
-    grid-template-columns: 1fr;
+.pill-europe {
+  border-color: #d1d5db;
+}
+
+@media (max-width: 860px) {
+  .pricing-body-compact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .bar-divider {
+    display: none;
   }
 }
 </style>

@@ -11,7 +11,7 @@
         <button
           type="button"
           class="nav-tab-btn"
-          :class="{ active: store.activeTab === 'home' || store.activeTab === 'checkout' }"
+          :class="{ active: store.activeTab === 'home' }"
           @click="store.goHome()"
         >
           <span>Inicio / Cotizar</span>
@@ -27,10 +27,6 @@
           <span v-if="store.quotations.length > 0" class="tab-badge">{{ store.meta.total }}</span>
         </button>
       </nav>
-
-      <div class="nav-extra">
-        <span class="support-label">Asistencia Consular 24/7</span>
-      </div>
     </div>
   </header>
 </template>
@@ -131,13 +127,6 @@ const store = useQuotationStore();
   border-radius: var(--radius-full);
 }
 
-.nav-extra {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #111111;
-  letter-spacing: -0.01em;
-}
-
 @media (max-width: 640px) {
   .navbar-container {
     flex-direction: column;
@@ -150,9 +139,6 @@ const store = useQuotationStore();
   .nav-tab-btn {
     flex: 1;
     justify-content: center;
-  }
-  .nav-extra {
-    display: none;
   }
 }
 </style>

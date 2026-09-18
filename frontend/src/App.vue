@@ -17,35 +17,22 @@
       <!-- VISTA 1: HOME / PRINCIPAL (Estilo Editorial Minimalista) -->
       <section v-if="store.activeTab === 'home'">
         <!-- Hero Editorial con Cápsula Elevada y CTA Único de Cotización -->
-        <TravelHero
-          @selectDestination="onSelectDestination"
-          @updateDates="onUpdateDates"
-        />
+        <TravelHero />
 
-        <!-- Estructura y Tarifas de Seguros en Vista Principal -->
-        <InsurancePricingSection
-          :livePreview="livePreview"
-          :liveCountryName="liveCountryName"
-          @requestQuote="onPriceQuoteRequest"
-        />
+        <!-- Estructura Compacta de Tarifas (Ultra-minimalista) -->
+        <InsurancePricingSection />
       </section>
 
-      <!-- VISTA 2: CHECKOUT / EMISIÓN Y REVISIÓN (Nueva Vista dentro de la misma página) -->
-      <section v-else-if="store.activeTab === 'checkout'">
-        <CheckoutView @quoteCreated="onQuoteCreated" />
-      </section>
-
-      <!-- VISTA 3: CONSULTAR SEGUROS Y MÉTRICAS -->
+      <!-- VISTA 2: CONSULTAR SEGUROS Y MÉTRICAS -->
       <section v-else-if="store.activeTab === 'list'">
         <QuotationsList />
       </section>
     </main>
 
-    <!-- Modal de Resultado / Certificado de Póliza -->
-    <QuoteResultModal
-      v-if="modalQuote"
-      :quote="modalQuote"
-      @close="closeModal"
+    <!-- MODAL POP-UP DE EMISIÓN DE PÓLIZA (Pantalla Difuminada / Backdrop Blur) -->
+    <QuoteModal
+      v-if="store.isQuoteModalOpen"
+      @close="store.closeQuoteModal()"
     />
 
     <footer class="app-footer">
@@ -53,7 +40,7 @@
         <div class="footer-brand-row">
           <span class="footer-logo">ViajaTranqui</span>
           <span class="footer-divider">•</span>
-          <span>Cobertura médica internacional 24/7 en más de 190 países</span>
+          <span>Cobertura médica internacional con validez consular en más de 190 países</span>
         </div>
         <p class="footer-sub">
           Sistema de Cotización y Venta de Seguro de Viaje • Laravel 11 + Vue 3 + TypeScript
@@ -64,60 +51,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useQuotationStore } from './stores/quotationStore';
 import Navbar from './components/Navbar.vue';
 import TravelHero from './components/TravelHero.vue';
 import InsurancePricingSection from './components/InsurancePricingSection.vue';
-import CheckoutView from './components/CheckoutView.vue';
+import QuoteModal from './components/QuoteModal.vue';
 import QuotationsList from './components/QuotationsList.vue';
-import QuoteResultModal from './components/QuoteResultModal.vue';
-import type { Quotation, PricingBreakdown } from './types/quotation';
 
 const store = useQuotationStore();
-const modalQuote = ref<Quotation | null>(null);
-const livePreview = ref<PricingBreakdown | null>(null);
-const liveCountryName = ref<string>('');
 
 onMounted(async () => {
   await store.fetchCountries();
-  refreshPreview();
 });
-
-async function refreshPreview() {
-  const code = store.tripDraft?.countryCode || 'ESP';
-  const country = store.countries.find((c) => c.code === code);
-  if (country) {
-    liveCountryName.value = `${country.name} (${country.region})`;
-    const start = store.tripDraft?.startDate;
-    const end = store.tripDraft?.endDate;
-    if (start && end && end >= start) {
-      livePreview.value = await store.calculatePreview(country.region, start, end);
-    }
-  }
-}
-
-function onSelectDestination(countryCode: string): void {
-  store.setTripDraft({ countryCode });
-  refreshPreview();
-}
-
-function onUpdateDates(payload: { start: string; end: string }): void {
-  store.setTripDraft({ startDate: payload.start, endDate: payload.end });
-  refreshPreview();
-}
-
-function onPriceQuoteRequest(): void {
-  store.goToCheckout();
-}
-
-function onQuoteCreated(quotation: Quotation): void {
-  modalQuote.value = quotation;
-}
-
-function closeModal(): void {
-  modalQuote.value = null;
-}
 </script>
 
 <style scoped>
