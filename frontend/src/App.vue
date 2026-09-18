@@ -4,7 +4,7 @@
 
     <main class="container main-content">
       <!-- VISTA 1: HOME / PRINCIPAL (Estilo Editorial Minimalista) -->
-      <section v-if="store.activeTab === 'home'">
+      <section v-if="store.activeTab === 'home'" class="view-section">
         <!-- Hero Editorial con Cápsula Elevada y CTA Único de Cotización -->
         <TravelHero />
 
@@ -12,8 +12,8 @@
         <InsurancePricingSection />
       </section>
 
-      <!-- VISTA 2: CONSULTAR SEGUROS Y MÉTRICAS -->
-      <section v-else-if="store.activeTab === 'list'">
+      <!-- VISTA 2: CONSULTAR SEGUROS -->
+      <section v-else-if="store.activeTab === 'list'" class="view-section">
         <QuotationsList />
       </section>
     </main>
@@ -134,7 +134,13 @@ onUnmounted(() => {
 
 .main-content {
   padding-top: 24px;
-  padding-bottom: 12px;
+  padding-bottom: 32px;
+  width: 100%;
+  flex: 1;
+}
+
+.view-section {
+  width: 100%;
 }
 
 /* ============================================================

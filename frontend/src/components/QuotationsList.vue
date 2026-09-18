@@ -1,39 +1,12 @@
 <template>
-  <div class="card list-card">
+  <div class="list-card">
     <div class="list-header">
       <div>
         <span class="editorial-category">Gestión Operativa</span>
         <h2 class="list-title">Registro de Pólizas</h2>
         <p class="list-subtitle">
-          Historial de cotizaciones emitidas y pólizas de viaje contratadas.
+          Historial y consulta de cotizaciones emitidas y pólizas de viaje contratadas.
         </p>
-      </div>
-    </div>
-
-    <!-- Panel de Métricas / KPIs Minimalista -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <span class="kpi-label">Total Registros</span>
-        <div class="kpi-value">{{ store.meta.total }}</div>
-        <span class="kpi-sub">Pólizas en base de datos</span>
-      </div>
-
-      <div class="kpi-card">
-        <span class="kpi-label">Pólizas Contratadas</span>
-        <div class="kpi-value text-success">{{ store.contractedCount }}</div>
-        <span class="kpi-sub">Coberturas vigentes</span>
-      </div>
-
-      <div class="kpi-card">
-        <span class="kpi-label">Tasa de Conversión</span>
-        <div class="kpi-value">{{ store.conversionRate }}</div>
-        <span class="kpi-sub">Efectividad de contratación</span>
-      </div>
-
-      <div class="kpi-card">
-        <span class="kpi-label">Total Facturado</span>
-        <div class="kpi-value">${{ store.totalBilledAmount.toFixed(2) }} <small>USD</small></div>
-        <span class="kpi-sub">Primas netas recaudadas</span>
       </div>
     </div>
 
@@ -62,19 +35,8 @@
       </div>
     </div>
 
-    <!-- Estado de Carga -->
-    <div v-if="store.loadingQuotations" class="table-loading">
-      <p>Cargando información...</p>
-    </div>
-
-    <!-- Estado Vacío -->
-    <div v-else-if="store.quotations.length === 0" class="empty-state">
-      <h3>No se encontraron pólizas</h3>
-      <p>No existen registros que coincidan con el criterio de búsqueda ingresado.</p>
-    </div>
-
-    <!-- Indicador de desplazamiento horizontal en pantallas estrechas -->
-    <div v-if="store.quotations.length > 0" class="scroll-hint-bar">
+    <!-- Indicador de desplazamiento horizontal para pantallas estrechas -->
+    <div v-if="!store.loadingQuotations && store.quotations.length > 0" class="scroll-hint-bar">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="17 11 12 6 7 11"></polyline>
         <polyline points="17 18 12 13 7 18"></polyline>
@@ -82,8 +44,76 @@
       <span>Desliza la tabla hacia la derecha para ver todas las columnas</span>
     </div>
 
-    <!-- Tabla Editorial Compacta de Cotizaciones -->
-    <div v-if="!store.loadingQuotations && store.quotations.length > 0" class="table-responsive">
+    <!-- 1. ESTADO DE CARGA: SKELETON LOADER CON MISMA ESTRUCTURA -->
+    <div v-if="store.loadingQuotations" class="table-responsive skeleton-wrapper" aria-busy="true">
+      <table class="quotes-table skeleton-table">
+        <thead>
+          <tr>
+            <th class="th-ref">Póliza & Emisión</th>
+            <th class="th-client">Asegurado & Contacto</th>
+            <th class="th-dest">Destino</th>
+            <th class="th-dates">Vigencia & Días</th>
+            <th class="th-amount">Total & Estado</th>
+            <th class="th-actions text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="n in 5" :key="'skel-' + n" class="skeleton-row">
+            <!-- Columna 1: Ref & Emisión -->
+            <td class="td-ref">
+              <div class="skel-bar skel-ref"></div>
+              <div class="skel-bar skel-date"></div>
+            </td>
+
+            <!-- Columna 2: Asegurado & Contacto -->
+            <td class="td-client">
+              <div class="skel-bar skel-name"></div>
+              <div class="skel-bar skel-sub"></div>
+            </td>
+
+            <!-- Columna 3: Destino -->
+            <td class="td-dest">
+              <div class="skel-dest-wrapper">
+                <div class="skel-flag"></div>
+                <div>
+                  <div class="skel-bar skel-country"></div>
+                  <div class="skel-bar skel-region"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Columna 4: Vigencia & Días -->
+            <td class="td-dates">
+              <div class="skel-bar skel-dates"></div>
+              <div class="skel-bar skel-days"></div>
+            </td>
+
+            <!-- Columna 5: Monto & Estado -->
+            <td class="td-amount">
+              <div class="skel-bar skel-amount"></div>
+              <div class="skel-bar skel-badge"></div>
+            </td>
+
+            <!-- Columna 6: Acciones -->
+            <td class="td-actions text-right">
+              <div class="skel-actions-wrapper">
+                <div class="skel-btn skel-btn-sm"></div>
+                <div class="skel-btn skel-btn-md"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 2. ESTADO VACÍO -->
+    <div v-else-if="store.quotations.length === 0" class="empty-state">
+      <h3>No se encontraron pólizas</h3>
+      <p>No existen registros que coincidan con el criterio de búsqueda ingresado.</p>
+    </div>
+
+    <!-- 3. TABLA DE DATOS REALES -->
+    <div v-else class="table-responsive">
       <table class="quotes-table">
         <thead>
           <tr>
@@ -130,7 +160,7 @@
               </div>
             </td>
 
-            <!-- Columna 4: Fechas y Cantidad de Días -->
+            <!-- Columna 4: Fechas y Cantidad de Días (Ultra Compacto) -->
             <td class="td-dates">
               <div class="dates-range">
                 <span>{{ formatDate(quote.start_date) }}</span>
@@ -193,7 +223,7 @@
     </div>
 
     <!-- Paginación Minimalista -->
-    <div v-if="store.meta.last_page > 1" class="pagination-bar">
+    <div v-if="!store.loadingQuotations && store.meta.last_page > 1" class="pagination-bar">
       <span class="pagination-info">
         Página {{ store.meta.current_page }} de {{ store.meta.last_page }} ({{ store.meta.total }} cotizaciones)
       </span>
@@ -271,6 +301,8 @@ function formatDateTime(dateTimeStr: string | null): string {
 
 <style scoped>
 .list-card {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 10px;
   background: #ffffff;
   border-radius: var(--radius-xl);
@@ -296,7 +328,7 @@ function formatDateTime(dateTimeStr: string | null): string {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .editorial-category {
@@ -322,55 +354,12 @@ function formatDateTime(dateTimeStr: string | null): string {
   margin-top: 6px;
 }
 
-/* Grilla KPI */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 28px;
-}
-.kpi-card {
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px 22px;
-  display: flex;
-  flex-direction: column;
-}
-
-.kpi-label {
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #717171;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-.kpi-value {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #111111;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: 4px;
-}
-.kpi-value small {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #717171;
-}
-.kpi-sub {
-  font-size: 0.75rem;
-  color: #888888;
-}
-
-.text-success { color: var(--color-success) !important; }
-
 /* Filtros */
 .filters-bar {
   display: flex;
   gap: 16px;
   margin-bottom: 20px;
+  width: 100%;
 }
 .search-box {
   flex: 1;
@@ -379,7 +368,7 @@ function formatDateTime(dateTimeStr: string | null): string {
   width: 200px;
 }
 
-/* Indicador de scroll para dispositivos estrechos */
+/* Indicador de scroll para pantallas estrechas */
 .scroll-hint-bar {
   display: none;
   align-items: center;
@@ -393,8 +382,10 @@ function formatDateTime(dateTimeStr: string | null): string {
   border-radius: var(--radius-sm);
 }
 
-/* Tabla Compacta */
+/* Contenedor de Tabla con Ancho Estable */
 .table-responsive {
+  width: 100%;
+  box-sizing: border-box;
   overflow-x: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -612,6 +603,110 @@ function formatDateTime(dateTimeStr: string | null): string {
   border-radius: var(--radius-sm);
 }
 
+/* ============================================================
+   SKELETON LOADER CON EFECTO SHIMMER SUAVE
+   ============================================================ */
+.skeleton-row td {
+  padding: 16px 18px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.skel-bar,
+.skel-flag,
+.skel-btn {
+  background: linear-gradient(
+    90deg,
+    #f4f4f6 0%,
+    #e8e8eb 50%,
+    #f4f4f6 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skel-ref {
+  width: 80px;
+  height: 14px;
+  margin-bottom: 6px;
+}
+.skel-date {
+  width: 60px;
+  height: 10px;
+}
+.skel-name {
+  width: 120px;
+  height: 14px;
+  margin-bottom: 6px;
+}
+.skel-sub {
+  width: 160px;
+  height: 10px;
+}
+.skel-dest-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.skel-flag {
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.skel-country {
+  width: 75px;
+  height: 13px;
+  margin-bottom: 4px;
+}
+.skel-region {
+  width: 50px;
+  height: 10px;
+}
+.skel-dates {
+  width: 140px;
+  height: 14px;
+  margin-bottom: 6px;
+}
+.skel-days {
+  width: 55px;
+  height: 13px;
+}
+.skel-amount {
+  width: 65px;
+  height: 15px;
+  margin-bottom: 6px;
+}
+.skel-badge {
+  width: 60px;
+  height: 15px;
+  border-radius: 9999px;
+}
+.skel-actions-wrapper {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.skel-btn-sm {
+  width: 48px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+}
+.skel-btn-md {
+  width: 70px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+}
+
 /* Paginación */
 .pagination-bar {
   display: flex;
@@ -628,8 +723,8 @@ function formatDateTime(dateTimeStr: string | null): string {
   gap: 8px;
 }
 
-/* Carga y vacío */
-.table-loading, .empty-state {
+/* Estado Vacío */
+.empty-state {
   text-align: center;
   padding: 48px 20px;
   color: var(--text-muted);
@@ -651,15 +746,9 @@ function formatDateTime(dateTimeStr: string | null): string {
   .list-card {
     padding: 24px 20px;
   }
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 640px) {
-  .kpi-grid {
-    grid-template-columns: 1fr;
-  }
   .filters-bar {
     flex-direction: column;
   }
