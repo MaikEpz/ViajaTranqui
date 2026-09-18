@@ -41,100 +41,95 @@
 
         <!-- Campos para editar itinerario si el usuario lo desea -->
         <div v-if="editingItinerary" class="itinerary-edit-row">
-          <div class="form-group">
-            <label class="form-label">País de Destino</label>
-            <select v-model="selectedCountryCode" class="form-control" @change="onCountryChange">
+          <div class="infield-group">
+            <label class="infield-label">País de Destino</label>
+            <select v-model="selectedCountryCode" class="infield-input infield-select" @change="onCountryChange">
               <option v-for="c in store.countries" :key="c.code" :value="c.code">
                 {{ c.name }} ({{ c.region }})
               </option>
             </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Salida</label>
-            <input v-model="form.start_date" type="date" class="form-control" :min="todayDate" @change="triggerRecalculation" />
+          <div class="infield-group">
+            <label class="infield-label">Fecha de Salida</label>
+            <input v-model="form.start_date" type="date" class="infield-input" :min="todayDate" @change="triggerRecalculation" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Retorno</label>
-            <input v-model="form.end_date" type="date" class="form-control" :min="form.start_date || todayDate" @change="triggerRecalculation" />
+          <div class="infield-group">
+            <label class="infield-label">Fecha de Regreso</label>
+            <input v-model="form.end_date" type="date" class="infield-input" :min="form.start_date || todayDate" @change="triggerRecalculation" />
           </div>
         </div>
 
         <!-- Cuerpo con Formulario y Liquidación -->
         <div class="modal-split-layout">
-          <!-- Columna Formulario -->
+          <!-- Columna Formulario con Etiquetas Integradas dentro del campo -->
           <form class="passenger-form-col" @submit.prevent="handleSubmit" novalidate>
             <div class="grid-2">
-              <div class="form-group">
-                <label class="form-label" for="m_first_name">Nombres <span class="required">*</span></label>
+              <div class="infield-group" :class="{ 'has-error': errors.first_name }">
+                <label class="infield-label" for="m_first_name">Nombres <span class="required">*</span></label>
                 <input
                   id="m_first_name"
                   v-model="form.first_name"
                   type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.first_name }"
+                  class="infield-input"
                   placeholder="Ej. Sofía"
                   required
                 />
-                <span v-if="errors.first_name" class="form-error">{{ errors.first_name }}</span>
+                <span v-if="errors.first_name" class="infield-error">{{ errors.first_name }}</span>
               </div>
 
-              <div class="form-group">
-                <label class="form-label" for="m_last_name">Apellidos <span class="required">*</span></label>
+              <div class="infield-group" :class="{ 'has-error': errors.last_name }">
+                <label class="infield-label" for="m_last_name">Apellidos <span class="required">*</span></label>
                 <input
                   id="m_last_name"
                   v-model="form.last_name"
                   type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.last_name }"
+                  class="infield-input"
                   placeholder="Ej. Morales"
                   required
                 />
-                <span v-if="errors.last_name" class="form-error">{{ errors.last_name }}</span>
+                <span v-if="errors.last_name" class="infield-error">{{ errors.last_name }}</span>
               </div>
             </div>
 
             <div class="grid-2">
-              <div class="form-group">
-                <label class="form-label" for="m_id">Cédula / Pasaporte <span class="required">*</span></label>
+              <div class="infield-group" :class="{ 'has-error': errors.identification_number }">
+                <label class="infield-label" for="m_id">Cédula / Pasaporte <span class="required">*</span></label>
                 <input
                   id="m_id"
                   v-model="form.identification_number"
                   type="text"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.identification_number }"
+                  class="infield-input"
                   placeholder="Ej. 1754829103"
                   required
                 />
-                <span v-if="errors.identification_number" class="form-error">{{ errors.identification_number }}</span>
+                <span v-if="errors.identification_number" class="infield-error">{{ errors.identification_number }}</span>
               </div>
 
-              <div class="form-group">
-                <label class="form-label" for="m_birth">Fecha de Nacimiento <span class="required">*</span></label>
+              <div class="infield-group" :class="{ 'has-error': errors.birth_date }">
+                <label class="infield-label" for="m_birth">Fecha de Nacimiento <span class="required">*</span></label>
                 <input
                   id="m_birth"
                   v-model="form.birth_date"
                   type="date"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.birth_date }"
+                  class="infield-input"
                   :max="todayDate"
                   required
                 />
-                <span v-if="errors.birth_date" class="form-error">{{ errors.birth_date }}</span>
+                <span v-if="errors.birth_date" class="infield-error">{{ errors.birth_date }}</span>
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="m_email">Correo Electrónico (Recepción PDF) <span class="required">*</span></label>
+            <div class="infield-group" :class="{ 'has-error': errors.email }">
+              <label class="infield-label" for="m_email">Correo Electrónico (Recepción PDF) <span class="required">*</span></label>
               <input
                 id="m_email"
                 v-model="form.email"
                 type="email"
-                class="form-control"
-                :class="{ 'is-invalid': errors.email }"
+                class="infield-input"
                 placeholder="sofia.morales@example.com"
                 required
               />
-              <span v-if="errors.email" class="form-error">{{ errors.email }}</span>
+              <span v-if="errors.email" class="infield-error">{{ errors.email }}</span>
             </div>
 
             <button
@@ -585,6 +580,79 @@ function closeModal() {
 .passenger-form-col {
   display: flex;
   flex-direction: column;
+}
+
+/* Entradas con Etiquetas Integradas (In-field Labels) estilo Airbnb / Stripe */
+.infield-group {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 12px;
+}
+
+.infield-group:focus-within {
+  border-color: #111111;
+  box-shadow: 0 0 0 1px #111111, 0 3px 8px rgba(0, 0, 0, 0.04);
+}
+
+.infield-group.has-error {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.infield-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #717171;
+  margin-bottom: 2px;
+  line-height: 1;
+  user-select: none;
+  cursor: pointer;
+}
+
+.infield-group:focus-within .infield-label {
+  color: #111111;
+}
+
+.infield-group.has-error .infield-label {
+  color: #dc2626;
+}
+
+.infield-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #111111;
+  font-family: inherit;
+  padding: 0;
+  width: 100%;
+  line-height: 1.25;
+}
+
+.infield-input::placeholder {
+  color: #a1a1aa;
+  font-weight: 400;
+  font-size: 0.88rem;
+}
+
+.infield-select {
+  cursor: pointer;
+  background: transparent;
+}
+
+.infield-error {
+  font-size: 0.68rem;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 4px;
 }
 
 .btn-modal-submit {
