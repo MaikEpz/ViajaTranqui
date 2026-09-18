@@ -270,4 +270,39 @@ onUnmounted(() => {
     display: none;
   }
 }
+
+@media (max-width: 640px) {
+  .minimal-pricing-bar {
+    padding: 18px 16px;
+    border-radius: var(--radius-lg);
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  .pricing-header-compact {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+  .pricing-label {
+    font-size: 0.98rem;
+  }
+  .pricing-sub {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+  .box-rate-val {
+    font-size: 1.65rem;
+  }
+  .surcharges-pills {
+    gap: 6px;
+  }
+  .s-pill {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+    gap: 6px;
+  }
+  .s-pct {
+    font-size: 0.72rem;
+    padding: 1px 5px;
+  }
+}
 </style>

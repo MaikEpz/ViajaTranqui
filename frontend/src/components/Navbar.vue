@@ -132,17 +132,47 @@ const store = useQuotationStore();
 }
 
 @media (max-width: 640px) {
+  .navbar {
+    padding: 12px 0;
+  }
   .navbar-container {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
-    align-items: flex-start;
+  }
+  .brand-logo-text {
+    font-size: 1.2rem;
+  }
+  .brand-logo-icon {
+    width: 28px;
+    height: 28px;
   }
   .nav-tabs {
     width: 100%;
+    display: flex;
+    padding: 3px;
   }
   .nav-tab-btn {
     flex: 1;
     justify-content: center;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    gap: 6px;
+  }
+  .tab-badge {
+    padding: 1px 6px;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-tab-btn {
+    padding: 6px 6px;
+    font-size: 0.73rem;
+    gap: 4px;
   }
 }
 </style>

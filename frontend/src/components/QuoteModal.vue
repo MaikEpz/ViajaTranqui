@@ -635,6 +635,7 @@ function closeModal() {
   font-family: inherit;
   padding: 0;
   width: 100%;
+  min-width: 0;
   line-height: 1.25;
 }
 
@@ -859,11 +860,35 @@ function closeModal() {
 }
 
 @media (max-width: 760px) {
+  .modal-backdrop-blur {
+    padding: 14px 10px;
+  }
+  .modal-dialog-card {
+    padding: 24px 18px;
+    border-radius: var(--radius-lg);
+  }
   .modal-split-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .rate-summary-col {
+    order: -1;
+    padding: 16px;
+    border-radius: var(--radius-md);
+  }
+  .rs-total {
+    font-size: 1.85rem;
+  }
+  .rs-perks {
+    display: none;
+  }
+  .rs-divider {
+    margin: 10px 0;
   }
   .itinerary-edit-row {
     grid-template-columns: 1fr;
+    padding: 12px;
   }
   .rcpt-grid {
     grid-template-columns: 1fr;
@@ -871,8 +896,59 @@ function closeModal() {
   .success-actions-row {
     flex-direction: column;
   }
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop-blur {
+    padding: 8px;
+  }
   .modal-dialog-card {
-    padding: 24px;
+    padding: 20px 14px;
+    max-height: 94vh;
+  }
+  .modal-headline {
+    font-size: 1.35rem;
+    padding-right: 28px;
+  }
+  .modal-caption {
+    font-size: 0.82rem;
+  }
+  .itinerary-pill-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 12px;
+  }
+  .itinerary-main-info {
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .itinerary-separator {
+    display: none;
+  }
+  .itinerary-destination,
+  .itinerary-dates,
+  .itinerary-days {
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+  }
+  .btn-toggle-edit {
+    align-self: flex-end;
+    font-size: 0.78rem;
+  }
+  .success-receipt-card {
+    padding: 16px 14px;
+  }
+  .rcpt-tot-val {
+    font-size: 1.85rem;
+  }
+  .btn-action-lg {
+    padding: 12px 16px;
+    font-size: 0.88rem;
   }
 }
 </style>

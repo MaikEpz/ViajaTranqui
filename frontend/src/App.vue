@@ -295,15 +295,32 @@ onUnmounted(() => {
   margin-top: 8px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
+  .main-content {
+    padding-top: 14px;
+    padding-bottom: 20px;
+  }
   .toast-container {
     bottom: 16px;
-    right: 16px;
-    left: 16px;
+    right: 14px;
+    left: 14px;
   }
   .toast-card {
     min-width: unset;
     max-width: 100%;
+    padding: 10px 14px;
+  }
+  .app-footer {
+    padding: 16px 0;
+    font-size: 0.76rem;
+  }
+  .footer-brand-row {
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+  .footer-sub {
+    font-size: 0.7rem;
+    margin-top: 6px;
   }
 }
 </style>

@@ -387,6 +387,7 @@ function formatDateTime(dateTimeStr: string | null): string {
   width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   background: #ffffff;
@@ -749,11 +750,54 @@ function formatDateTime(dateTimeStr: string | null): string {
 }
 
 @media (max-width: 640px) {
+  .list-card {
+    padding: 18px 14px;
+    border-radius: var(--radius-lg);
+    margin-top: 4px;
+  }
+  .list-title {
+    font-size: 1.45rem;
+  }
+  .list-subtitle {
+    font-size: 0.82rem;
+  }
   .filters-bar {
     flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .search-input {
+    padding: 11px 14px;
+    font-size: 0.88rem;
   }
   .status-select {
     width: 100%;
+    padding: 11px 14px;
+    font-size: 0.88rem;
+  }
+  .scroll-hint-bar {
+    display: flex;
+    font-size: 0.72rem;
+    padding: 7px 10px;
+  }
+  .pagination-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+  .pagination-btns {
+    width: 100%;
+    display: flex;
+  }
+  .pagination-btns .btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .list-card {
+    padding: 14px 10px;
   }
 }
 </style>

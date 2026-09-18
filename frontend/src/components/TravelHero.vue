@@ -404,10 +404,32 @@ function onCotizarClick() {
 }
 
 @media (max-width: 900px) {
+  .hero-image-wrapper {
+    height: 380px;
+    border-radius: var(--radius-lg);
+  }
+  .hero-inner-content {
+    bottom: 0;
+    padding: 24px 20px;
+  }
+  .editorial-headline {
+    font-size: 2.3rem;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .editorial-subheading {
+    font-size: 1.02rem;
+    line-height: 1.48;
+  }
+  .floating-capsule-wrapper {
+    position: relative;
+    margin-top: -30px;
+    padding: 0 12px;
+  }
   .search-capsule {
     border-radius: var(--radius-lg);
     flex-direction: column;
-    padding: 20px;
+    padding: 22px 20px;
     gap: 16px;
   }
   .capsule-divider {
@@ -420,16 +442,80 @@ function onCotizarClick() {
   .capsule-action-btn {
     width: 100%;
     justify-content: center;
-  }
-  .floating-capsule-wrapper {
-    position: static;
-    margin-top: -20px;
+    padding: 13px 24px;
   }
   .editorial-hero {
     margin-bottom: 30px;
   }
+}
+
+@media (max-width: 640px) {
+  .hero-image-wrapper {
+    height: 310px;
+  }
+  .hero-inner-content {
+    padding: 20px 16px;
+  }
   .editorial-headline {
-    font-size: 2.2rem;
+    font-size: clamp(1.65rem, 6.2vw, 2.05rem);
+    line-height: 1.18;
+    margin-bottom: 8px;
+  }
+  .editorial-subheading {
+    font-size: 0.88rem;
+    line-height: 1.42;
+  }
+  .floating-capsule-wrapper {
+    margin-top: -22px;
+    padding: 0;
+  }
+  .search-capsule {
+    padding: 16px 14px;
+    gap: 14px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 14px 35px -6px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  }
+  .capsule-input-select {
+    font-size: 0.88rem;
+  }
+  .dates-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .date-arrow {
+    display: none;
+  }
+  .capsule-date-input {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.82rem;
+    background-color: #fafafa;
+    border: 1px solid #e5e5e5;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  .capsule-date-input:focus {
+    border-color: #111111;
+  }
+  .guests-text {
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-image-wrapper {
+    height: 290px;
+  }
+  .editorial-headline {
+    font-size: 1.55rem;
+  }
+  .dates-inline {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
 </style>
