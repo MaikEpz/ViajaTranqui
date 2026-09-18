@@ -10,20 +10,20 @@ use Throwable;
 class RestCountriesService
 {
     /**
-     * Primary REST Countries endpoint (as requested in technical test).
+     * Endpoint primario oficial de REST Countries.
      */
     protected const PRIMARY_API_URL = 'https://restcountries.com/v3.1/all?fields=name,cca2,cca3,region,subregion,flags';
 
     /**
-     * High-reliability public mirror (standard mledoze/countries open dataset).
+     * Espejo público abierto de alta disponibilidad (dataset oficial mledoze/countries).
      */
     protected const MIRROR_API_URL = 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json';
 
     protected const CACHE_KEY = 'rest_countries_dataset';
-    protected const CACHE_TTL_SECONDS = 86400; // 24 hours
+    protected const CACHE_TTL_SECONDS = 86400; // Caché de 24 horas
 
     /**
-     * Get list of countries, cached and resilient to API outages.
+     * Obtiene el catálogo de países, con caché y alta tolerancia a fallos.
      */
     public function getCountries(): array
     {
@@ -33,54 +33,54 @@ class RestCountriesService
     }
 
     /**
-     * Fetch countries with graceful degradation:
-     * 1. Attempt Primary REST Countries API
-     * 2. If timed out or unexpected response (e.g. deprecation message), attempt Open Public Mirror
-     * 3. If still failing, return bundled offline fallback countries
+     * Recupera los países aplicando degradación elegante:
+     * 1. Intento con la API primaria REST Countries
+     * 2. Si falla o responde con error, intento con el espejo público abierto
+     * 3. Si ambos fallan, retorna el catálogo offline de respaldo empaquetado
      */
     protected function fetchCountriesWithGracefulDegradation(): array
     {
-        // 1. Try Primary REST Countries API
+        // 1. Intento con la API primaria
         try {
             $response = Http::timeout(5)->get(self::PRIMARY_API_URL);
 
             if ($response->successful()) {
                 $data = $response->json();
                 if ($this->isValidCountriesPayload($data)) {
-                    Log::info('RestCountries: loaded from primary API');
+                    Log::info('RestCountries: cargado exitosamente desde la API primaria');
                     return $this->normalizeCountries($data);
                 }
 
-                Log::warning('RestCountries primary API returned unexpected non-country payload (possible API deprecation or rate limit)', [
+                Log::warning('RestCountries API primaria retornó un payload inesperado (posible depreciación o límite de tasa)', [
                     'payload_snippet' => is_array($data) ? array_slice($data, 0, 3) : $data,
                 ]);
             }
         } catch (Throwable $e) {
-            Log::warning('RestCountries primary API connection issue: ' . $e->getMessage());
+            Log::warning('Problema de conexión con la API primaria de RestCountries: ' . $e->getMessage());
         }
 
-        // 2. Fallback to Open Public Mirror
+        // 2. Intento con el espejo público abierto
         try {
             $mirrorResponse = Http::timeout(5)->get(self::MIRROR_API_URL);
 
             if ($mirrorResponse->successful()) {
                 $mirrorData = $mirrorResponse->json();
                 if ($this->isValidCountriesPayload($mirrorData)) {
-                    Log::info('RestCountries: fallback to public mirror succeeded');
+                    Log::info('RestCountries: respaldo con espejo público exitoso');
                     return $this->normalizeCountries($mirrorData);
                 }
             }
         } catch (Throwable $e) {
-            Log::warning('RestCountries public mirror connection issue: ' . $e->getMessage());
+            Log::warning('Problema de conexión con el espejo público de RestCountries: ' . $e->getMessage());
         }
 
-        // 3. Final safety net: bundled offline dataset
-        Log::warning('RestCountries: using offline fallback dataset');
+        // 3. Red de seguridad final: catálogo offline empaquetado
+        Log::warning('RestCountries: utilizando catálogo offline empaquetado');
         return $this->getFallbackCountries();
     }
 
     /**
-     * Validate that the payload is actually an array of country records.
+     * Valida que la respuesta sea efectivamente un arreglo de registros de países.
      */
     protected function isValidCountriesPayload(mixed $data): bool
     {
@@ -88,18 +88,18 @@ class RestCountriesService
             return false;
         }
 
-        // Check if associative error response like ['success' => false, 'errors' => ...]
+        // Verificar si es una respuesta de error asociativo como ['success' => false, 'errors' => ...]
         if (isset($data['success']) && $data['success'] === false) {
             return false;
         }
 
-        // First item must be an array with 'name' property
+        // El primer elemento debe ser un array con la propiedad 'name'
         $first = reset($data);
         return is_array($first) && isset($first['name']);
     }
 
     /**
-     * Normalize API raw response into a clean, unified structure.
+     * Normaliza la respuesta sin procesar de la API a una estructura uniforme.
      */
     protected function normalizeCountries(array $rawCountries): array
     {
@@ -117,7 +117,7 @@ class RestCountriesService
 
             $effectiveRegion = $this->resolveEffectiveRegion($region, $subregion);
 
-            // Flag image URL (SVG/PNG or fallback flagcdn)
+            // URL de bandera (SVG/PNG o respaldo de flagcdn)
             $flagUrl = $item['flags']['png'] ?? ($item['flags']['svg'] ?? null);
             if (!$flagUrl && !empty($cca2)) {
                 $flagUrl = "https://flagcdn.com/w320/{$cca2}.png";
@@ -132,14 +132,14 @@ class RestCountriesService
             ];
         }
 
-        // Sort alphabetically by country name
+        // Ordenar alfabéticamente por nombre común
         usort($countries, fn ($a, $b) => strcmp($a['name'], $b['name']));
 
         return $countries;
     }
 
     /**
-     * Maps regions and subregions into quotation surcharge categories.
+     * Mapea regiones y subregiones a las categorías de recargo de cotización.
      */
     protected function resolveEffectiveRegion(string $region, ?string $subregion): string
     {
@@ -162,7 +162,7 @@ class RestCountriesService
     }
 
     /**
-     * Find country by ISO code.
+     * Busca un país por su código ISO alfa-3 o alfa-2.
      */
     public function findByCode(string $code): ?array
     {
@@ -179,7 +179,7 @@ class RestCountriesService
     }
 
     /**
-     * High-reliability fallback countries dataset.
+     * Catálogo local empaquetado para tolerancia ante caídas totales de conectividad.
      */
     protected function getFallbackCountries(): array
     {

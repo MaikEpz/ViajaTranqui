@@ -1,0 +1,108 @@
+name: CI Pipeline - ViajaTranqui
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  backend-tests:
+    name: Backend Test Suite (PEST & PHP 8.4)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_secret
+          MYSQL_DATABASE: viajatranqui
+          MYSQL_USER: viaja_user
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost -u viaja_user -psecret" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, bcmath, gd, zip, intl, curl
+          coverage: none
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+        working-directory: backend
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction --optimize-autoloader
+        working-directory: backend
+
+      - name: Prepare Environment File
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+        working-directory: backend
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: viajatranqui
+          DB_USERNAME: viaja_user
+          DB_PASSWORD: secret
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+        working-directory: backend
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: viajatranqui
+          DB_USERNAME: viaja_user
+          DB_PASSWORD: secret
+
+      - name: Execute Automated Tests with PEST
+        run: ./vendor/bin/pest
+        working-directory: backend
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: viajatranqui
+          DB_USERNAME: viaja_user
+          DB_PASSWORD: secret
+
+  frontend-build:
+    name: Frontend Typecheck & Build (Vue 3 + TypeScript)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install NPM Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Verify TypeScript Type Checking & Production Build
+        run: npm run build
+        working-directory: frontend

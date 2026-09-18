@@ -8,12 +8,12 @@ use InvalidArgumentException;
 class QuotationCalculationService
 {
     /**
-     * Daily base rate in USD.
+     * Tarifa base diaria obligatoria en USD.
      */
     public const BASE_RATE_PER_DAY = 3.00;
 
     /**
-     * Surcharges by geographical region.
+     * Matriz de recargos porcentuales por región geográfica.
      */
     public const REGION_SURCHARGES = [
         'South America' => 0.0,
@@ -25,11 +25,11 @@ class QuotationCalculationService
     ];
 
     /**
-     * Calculate quotation pricing details.
+     * Calcula los detalles financieros y desglose de la cotización.
      *
-     * @param string $region Geographical region (e.g., Europe, South America)
-     * @param string|Carbon $startDate Departure date
-     * @param string|Carbon $endDate Return date
+     * @param string $region Región geográfica (ej. Europe, South America)
+     * @param string|Carbon $startDate Fecha de salida
+     * @param string|Carbon $endDate Fecha de regreso
      * @return array
      * @throws InvalidArgumentException
      */
@@ -42,14 +42,14 @@ class QuotationCalculationService
             throw new InvalidArgumentException('La fecha de regreso no puede ser anterior a la fecha de salida.');
         }
 
-        // Calculate travel days (inclusive: departure day + return day)
+        // Cálculo de días de viaje (inclusivo: día de salida + día de retorno)
         $daysCount = (int) $start->diffInDays($end) + 1;
 
-        // Base calculations
+        // Cálculos base
         $baseRate = self::BASE_RATE_PER_DAY;
         $baseAmount = round($daysCount * $baseRate, 2);
 
-        // Region surcharge lookup with case-insensitive / normalized fallback
+        // Búsqueda de recargo regional con normalización
         $surchargePercentage = $this->getSurchargePercentageForRegion($region);
         $surchargeAmount = round($baseAmount * ($surchargePercentage / 100), 2);
 
@@ -72,7 +72,7 @@ class QuotationCalculationService
     }
 
     /**
-     * Resolve surcharge percentage for a region.
+     * Determina el porcentaje de recargo aplicable a una región.
      */
     public function getSurchargePercentageForRegion(string $region): float
     {
@@ -84,9 +84,9 @@ class QuotationCalculationService
             }
         }
 
-        // Americas subregion fallback checks if needed
+        // Si la región viene como 'Americas' genérico, se aplica la tarifa base de Sudamérica (0%)
         if (strcasecmp($normalized, 'Americas') === 0) {
-            return 0.0; // Default to South America rate if unspecified
+            return 0.0;
         }
 
         return 0.0;

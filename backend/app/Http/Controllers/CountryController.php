@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Domain\Actions\GetCountriesAction;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Controlador HTTP para el catálogo de países de destino.
+ */
 class CountryController extends Controller
 {
     /**
-     * Return list of all destination countries through GetCountriesAction use case.
+     * Retorna el catálogo completo de países utilizando el caso de uso GetCountriesAction.
      */
     public function index(GetCountriesAction $action): JsonResponse
     {

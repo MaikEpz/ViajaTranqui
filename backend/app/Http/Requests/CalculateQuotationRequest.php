@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validación de reglas para pre-calcular una cotización.
+ */
 class CalculateQuotationRequest extends FormRequest
 {
     public function authorize(): bool

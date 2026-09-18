@@ -2,6 +2,9 @@
 
 namespace App\Domain\DTOs;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) inmutable con la información validada para crear una cotización.
+ */
 readonly class QuotationData
 {
     public function __construct(
@@ -18,6 +21,9 @@ readonly class QuotationData
         public string $endDate,
     ) {}
 
+    /**
+     * Construye la instancia desde los datos validados del FormRequest.
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -35,6 +41,9 @@ readonly class QuotationData
         );
     }
 
+    /**
+     * Retorna el arreglo plano con nomenclatura snake_case para Eloquent.
+     */
     public function toArray(): array
     {
         return [

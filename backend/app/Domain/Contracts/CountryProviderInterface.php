@@ -4,17 +4,21 @@ namespace App\Domain\Contracts;
 
 use App\Domain\DTOs\CountryData;
 
+/**
+ * Contrato de dominio para proveedores de información de países.
+ * Aplica el principio de Inversión de Dependencias (DIP).
+ */
 interface CountryProviderInterface
 {
     /**
-     * Retrieve a list of available destination countries.
+     * Obtiene el listado completo de países habilitados para cotización.
      *
      * @return array<CountryData>
      */
     public function getCountries(): array;
 
     /**
-     * Find country by its ISO code (alpha-2 or alpha-3).
+     * Busca un país específico por su código ISO (alpha-2 o alpha-3).
      */
     public function findByCode(string $code): ?CountryData;
 }

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Modelo Eloquent para la entidad Quotation (Cotizaciones y Seguros de Viaje).
+ */
 class Quotation extends Model
 {
     use HasFactory;
@@ -33,16 +36,16 @@ class Quotation extends Model
     ];
 
     protected $casts = [
-        'birth_date' => 'date',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'days_count' => 'integer',
-        'base_rate_per_day' => 'decimal:2',
-        'base_amount' => 'decimal:2',
+        'birth_date'           => 'date',
+        'start_date'           => 'date',
+        'end_date'             => 'date',
+        'days_count'           => 'integer',
+        'base_rate_per_day'    => 'decimal:2',
+        'base_amount'          => 'decimal:2',
         'surcharge_percentage' => 'decimal:2',
-        'surcharge_amount' => 'decimal:2',
-        'total_amount' => 'decimal:2',
-        'contracted_at' => 'datetime',
+        'surcharge_amount'     => 'decimal:2',
+        'total_amount'         => 'decimal:2',
+        'contracted_at'        => 'datetime',
     ];
 
     protected $appends = [
@@ -50,7 +53,7 @@ class Quotation extends Model
     ];
 
     /**
-     * Get the full name of the insured client.
+     * Accesor para obtener el nombre completo del asegurado.
      */
     public function getFullNameAttribute(): string
     {
@@ -58,7 +61,7 @@ class Quotation extends Model
     }
 
     /**
-     * Scope for searching quotations by client name, email, or identification number.
+     * Scope para filtrar por término de búsqueda (nombre, apellido, cédula, correo o país).
      */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
@@ -78,7 +81,7 @@ class Quotation extends Model
     }
 
     /**
-     * Scope for filtering by quotation status.
+     * Scope para filtrar por estado ('Cotizado' o 'Contratado').
      */
     public function scopeByStatus(Builder $query, ?string $status): Builder
     {
@@ -90,7 +93,7 @@ class Quotation extends Model
     }
 
     /**
-     * Mark quotation as contracted.
+     * Método auxiliar para marcar el registro como contratado.
      */
     public function markAsContracted(): bool
     {

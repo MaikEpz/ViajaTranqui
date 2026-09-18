@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
+ * Fábrica para generar registros de prueba de cotizaciones y seguros de viaje.
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Quotation>
  */
 class QuotationFactory extends Factory
@@ -61,7 +62,7 @@ class QuotationFactory extends Factory
     }
 
     /**
-     * Indicate that quotation is contracted.
+     * Estado para generar la cotización ya confirmada como contratada.
      */
     public function contracted(): static
     {

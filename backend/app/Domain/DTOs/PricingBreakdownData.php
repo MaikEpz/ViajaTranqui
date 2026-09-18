@@ -2,6 +2,9 @@
 
 namespace App\Domain\DTOs;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) inmutable para el desglose financiero de una cotización.
+ */
 readonly class PricingBreakdownData
 {
     public function __construct(
@@ -13,6 +16,9 @@ readonly class PricingBreakdownData
         public float $totalAmount,
     ) {}
 
+    /**
+     * Retorna los datos estructurados y formateados para respuesta API.
+     */
     public function toArray(): array
     {
         return [

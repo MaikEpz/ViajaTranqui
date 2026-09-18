@@ -11,6 +11,41 @@
       </button>
     </div>
 
+    <!-- Panel de Métricas / KPIs Clave (Bonus UI) -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-icon">📋</span>
+        <div>
+          <span class="kpi-label">Total Cotizaciones</span>
+          <span class="kpi-value">{{ store.meta.total }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-icon">🛡️</span>
+        <div>
+          <span class="kpi-label">Pólizas Contratadas</span>
+          <span class="kpi-value text-success">{{ store.contractedCount }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-icon">📈</span>
+        <div>
+          <span class="kpi-label">Tasa de Conversión</span>
+          <span class="kpi-value text-primary">{{ store.conversionRate }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-icon">💵</span>
+        <div>
+          <span class="kpi-label">Facturado en Vista</span>
+          <span class="kpi-value text-accent">${{ store.totalBilledAmount.toFixed(2) }} USD</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters Bar -->
     <div class="filters-bar">
       <div class="search-box">
@@ -221,6 +256,55 @@ function formatDateTime(dateTimeStr: string | null): string {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kpi-icon {
+  font-size: 24px;
+  background-color: #ffffff;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.kpi-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+.text-success {
+  color: var(--color-success);
+}
+.text-primary {
+  color: var(--color-primary);
+}
+.text-accent {
+  color: #0f172a;
 }
 
 .filters-bar {

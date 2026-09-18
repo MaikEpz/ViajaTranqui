@@ -7,21 +7,21 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Ejecuta las migraciones de la tabla de cotizaciones.
      */
     public function up(): void
     {
         Schema::create('quotations', function (Blueprint $table) {
             $table->id();
 
-            // Client data
+            // Información del cliente asegurado
             $table->string('first_name');
             $table->string('last_name');
             $table->string('identification_number')->index();
             $table->string('email')->index();
             $table->date('birth_date');
 
-            // Trip data
+            // Información del viaje y destino
             $table->string('destination_country');
             $table->string('destination_country_code', 10);
             $table->string('destination_region');
@@ -30,14 +30,14 @@ return new class extends Migration
             $table->date('end_date');
             $table->unsignedInteger('days_count');
 
-            // Financial breakdown
+            // Desglose económico y tarifario
             $table->decimal('base_rate_per_day', 8, 2)->default(3.00);
             $table->decimal('base_amount', 10, 2);
             $table->decimal('surcharge_percentage', 5, 2)->default(0.00);
             $table->decimal('surcharge_amount', 10, 2)->default(0.00);
             $table->decimal('total_amount', 10, 2);
 
-            // Status & Lifecycle
+            // Estado del ciclo de vida y fecha de contratación
             $table->enum('status', ['Cotizado', 'Contratado'])->default('Cotizado')->index();
             $table->timestamp('contracted_at')->nullable();
 
@@ -46,7 +46,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Revierte las migraciones.
      */
     public function down(): void
     {

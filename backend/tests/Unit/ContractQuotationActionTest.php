@@ -4,7 +4,7 @@ use App\Domain\Actions\ContractQuotationAction;
 use App\Domain\Exceptions\QuotationAlreadyContractedException;
 use App\Models\Quotation;
 
-test('it transitions a quotation from Cotizado to Contratado with timestamp', function () {
+test('transiciona una cotización de Cotizado a Contratado registrando la fecha de contratación', function () {
     $quotation = Quotation::factory()->create([
         'status'        => 'Cotizado',
         'contracted_at' => null,
@@ -17,7 +17,7 @@ test('it transitions a quotation from Cotizado to Contratado with timestamp', fu
         ->and($updated->contracted_at)->not->toBeNull();
 });
 
-test('it throws QuotationAlreadyContractedException when quotation is already contracted', function () {
+test('lanza la excepción QuotationAlreadyContractedException cuando se intenta re-contratar un seguro', function () {
     $quotation = Quotation::factory()->contracted()->create();
 
     $action = new ContractQuotationAction();

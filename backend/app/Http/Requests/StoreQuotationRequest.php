@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use App\Domain\DTOs\QuotationData;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validación de reglas para el registro definitivo de una cotización.
+ */
 class StoreQuotationRequest extends FormRequest
 {
     public function authorize(): bool
@@ -15,14 +18,14 @@ class StoreQuotationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Insured customer
+            // Datos del cliente asegurado
             'first_name'               => ['required', 'string', 'min:2', 'max:100'],
             'last_name'                => ['required', 'string', 'min:2', 'max:100'],
             'identification_number'    => ['required', 'string', 'min:4', 'max:30'],
             'email'                    => ['required', 'email:rfc', 'max:150'],
             'birth_date'               => ['required', 'date', 'before:today'],
 
-            // Trip details
+            // Datos del viaje
             'destination_country'      => ['required', 'string', 'max:100'],
             'destination_country_code' => ['required', 'string', 'max:10'],
             'destination_region'       => ['required', 'string', 'max:50'],
@@ -52,7 +55,7 @@ class StoreQuotationRequest extends FormRequest
     }
 
     /**
-     * Transform validated HTTP payload into Domain DTO.
+     * Transforma la carga HTTP validada en un DTO inmutable de dominio.
      */
     public function toDTO(): QuotationData
     {

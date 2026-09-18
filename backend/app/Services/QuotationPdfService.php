@@ -6,10 +6,13 @@ use App\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Servicio de infraestructura para la renderización y exportación de comprobantes en PDF.
+ */
 class QuotationPdfService
 {
     /**
-     * Generate PDF binary content or download response for a quotation.
+     * Genera el documento PDF a partir de la vista Blade y la cotización.
      */
     public function generate(Quotation $quotation): \Barryvdh\DomPDF\PDF
     {
@@ -18,13 +21,13 @@ class QuotationPdfService
         ])->setPaper('a4', 'portrait')
           ->setOptions([
               'isHtml5ParserEnabled' => true,
-              'isRemoteEnabled' => true,
-              'defaultFont' => 'sans-serif',
+              'isRemoteEnabled'      => true,
+              'defaultFont'          => 'sans-serif',
           ]);
     }
 
     /**
-     * Download stream response for a quotation.
+     * Retorna una respuesta de descarga de flujo de bytes para el navegador.
      */
     public function download(Quotation $quotation): Response
     {

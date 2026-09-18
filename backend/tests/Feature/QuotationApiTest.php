@@ -2,11 +2,11 @@
 
 use App\Models\Quotation;
 
-test('it can preview a quotation calculation via API', function () {
+test('puede previsualizar el cálculo de la tarifa de una cotización vía API', function () {
     $response = $this->postJson('/api/quotes/calculate', [
         'destination_region' => 'Europe',
         'start_date'         => now()->addDays(2)->format('Y-m-d'),
-        'end_date'           => now()->addDays(11)->format('Y-m-d'), // 10 days
+        'end_date'           => now()->addDays(11)->format('Y-m-d'), // 10 días
     ]);
 
     $response->assertStatus(200)
@@ -23,7 +23,7 @@ test('it can preview a quotation calculation via API', function () {
         ]);
 });
 
-test('it validates required fields when storing a quotation', function () {
+test('valida los campos obligatorios al registrar una cotización', function () {
     $response = $this->postJson('/api/quotes', []);
 
     $response->assertStatus(422)
@@ -40,7 +40,7 @@ test('it validates required fields when storing a quotation', function () {
         ]);
 });
 
-test('it creates a quotation with Cotizado status', function () {
+test('crea y almacena una cotización con estado inicial Cotizado', function () {
     $payload = [
         'first_name'               => 'Laura',
         'last_name'                => 'Gomez',
@@ -52,7 +52,7 @@ test('it creates a quotation with Cotizado status', function () {
         'destination_region'       => 'Europe',
         'destination_flag_url'     => 'https://flagcdn.com/w320/fr.png',
         'start_date'               => now()->addDays(5)->format('Y-m-d'),
-        'end_date'                 => now()->addDays(9)->format('Y-m-d'), // 5 days: $15 base + 20% ($3) = $18
+        'end_date'                 => now()->addDays(9)->format('Y-m-d'), // 5 días: $15 base + 20% ($3) = $18
     ];
 
     $response = $this->postJson('/api/quotes', $payload);
@@ -75,7 +75,7 @@ test('it creates a quotation with Cotizado status', function () {
     ]);
 });
 
-test('it can transition quotation to Contratado status', function () {
+test('puede confirmar y transicionar una cotización al estado Contratado', function () {
     $quotation = Quotation::factory()->create([
         'status'        => 'Cotizado',
         'contracted_at' => null,
@@ -97,7 +97,7 @@ test('it can transition quotation to Contratado status', function () {
         ->and($quotation->contracted_at)->not->toBeNull();
 });
 
-test('it allows downloading quotation PDF', function () {
+test('permite descargar el comprobante de cotización en formato PDF', function () {
     $quotation = Quotation::factory()->create();
 
     $response = $this->get("/api/quotes/{$quotation->id}/pdf");
@@ -106,7 +106,7 @@ test('it allows downloading quotation PDF', function () {
         ->assertHeader('content-type', 'application/pdf');
 });
 
-test('it returns countries list from API', function () {
+test('retorna el catálogo de países desde el endpoint de la API', function () {
     $response = $this->getJson('/api/countries');
 
     $response->assertStatus(200)

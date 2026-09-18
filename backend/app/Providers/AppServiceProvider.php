@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Registra los enlaces de servicios e interfaces en el contenedor de dependencias.
      */
     public function register(): void
     {
@@ -18,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Inicialización de servicios de la aplicación en el arranque.
      */
     public function boot(): void
     {

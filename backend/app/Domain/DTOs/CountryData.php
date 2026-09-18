@@ -2,6 +2,9 @@
 
 namespace App\Domain\DTOs;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) inmutable para un país de destino.
+ */
 readonly class CountryData
 {
     public function __construct(
@@ -12,6 +15,9 @@ readonly class CountryData
         public ?string $flagUrl = null,
     ) {}
 
+    /**
+     * Construye una instancia a partir de un arreglo asociativo.
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -23,6 +29,9 @@ readonly class CountryData
         );
     }
 
+    /**
+     * Serializa el DTO a un arreglo primitivo.
+     */
     public function toArray(): array
     {
         return [

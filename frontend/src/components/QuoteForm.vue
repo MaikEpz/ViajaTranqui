@@ -391,7 +391,7 @@ async function handleSubmit(): Promise<void> {
     const quotation = await store.createQuotation(payload);
     emit('quoteCreated', quotation);
   } catch (err) {
-    // Handled in store
+    // El error es gestionado y notificado en el store de Pinia
   }
 }
 </script>
@@ -490,7 +490,7 @@ async function handleSubmit(): Promise<void> {
   margin-top: 10px;
 }
 
-/* Sidebar */
+/* Barra lateral de resumen económico */
 .pricing-card {
   position: sticky;
   top: 90px;

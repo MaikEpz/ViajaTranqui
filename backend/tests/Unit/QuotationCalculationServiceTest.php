@@ -7,9 +7,9 @@ beforeEach(function () {
     $this->service = new QuotationCalculationService();
 });
 
-test('it calculates basic pricing with USD 3 per day correctly', function () {
+test('calcula correctamente la tarifa básica con USD 3 por día', function () {
     $start = Carbon::parse('2026-10-01');
-    $end = Carbon::parse('2026-10-10'); // 10 days inclusive
+    $end = Carbon::parse('2026-10-10'); // 10 días inclusivos
 
     $result = $this->service->calculate('South America', $start, $end);
 
@@ -21,8 +21,8 @@ test('it calculates basic pricing with USD 3 per day correctly', function () {
         ->and($result['total_amount'])->toBe(30.00);
 });
 
-test('it calculates pricing for Spain with 20% Europe surcharge as defined in specifications', function () {
-    // Specification example: 10 days in Spain = $30 base + $6 surcharge = $36 total
+test('calcula la cotización para España con 20% de recargo Europa según especificación', function () {
+    // Ejemplo de la prueba técnica: Viaje de 10 días a España = $30 base + $6 recargo = $36 total
     $start = Carbon::parse('2026-10-01');
     $end = Carbon::parse('2026-10-10');
 
@@ -35,9 +35,9 @@ test('it calculates pricing for Spain with 20% Europe surcharge as defined in sp
         ->and($result['total_amount'])->toBe(36.00);
 });
 
-test('it correctly applies surcharges across all defined geographical regions', function (string $region, float $expectedSurcharge) {
+test('aplica correctamente los recargos en todas las regiones geográficas definidas', function (string $region, float $expectedSurcharge) {
     $start = Carbon::parse('2026-10-01');
-    $end = Carbon::parse('2026-10-10'); // 10 days = $30 base
+    $end = Carbon::parse('2026-10-10'); // 10 días = $30 base
 
     $result = $this->service->calculate($region, $start, $end);
 
@@ -56,7 +56,7 @@ test('it correctly applies surcharges across all defined geographical regions', 
     ['Oceania',       25.0],
 ]);
 
-test('it throws InvalidArgumentException when end date is earlier than start date', function () {
+test('lanza InvalidArgumentException cuando la fecha de retorno es anterior a la de salida', function () {
     $start = Carbon::parse('2026-10-10');
     $end = Carbon::parse('2026-10-05');
 

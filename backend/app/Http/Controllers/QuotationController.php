@@ -15,6 +15,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP para el ciclo de vida de cotizaciones y seguros de viaje.
+ * Sigue el patrón Slim Controller delegando la lógica a los Casos de Uso (Actions).
+ */
 class QuotationController extends Controller
 {
     public function __construct(
@@ -22,7 +26,7 @@ class QuotationController extends Controller
     ) {}
 
     /**
-     * Preview calculation without persisting via CalculateQuotationAction.
+     * Pre-cálculo interactivo de cotización sin persistir.
      */
     public function calculate(CalculateQuotationRequest $request, CalculateQuotationAction $action): JsonResponse
     {
@@ -46,7 +50,7 @@ class QuotationController extends Controller
     }
 
     /**
-     * Store a new quotation via CreateQuotationAction and DTO.
+     * Registra una nueva cotización en estado 'Cotizado' a través de CreateQuotationAction y su DTO.
      */
     public function store(StoreQuotationRequest $request, CreateQuotationAction $action): JsonResponse
     {
@@ -67,7 +71,7 @@ class QuotationController extends Controller
     }
 
     /**
-     * List quotations with pagination, search, and status filters.
+     * Consulta y listado de cotizaciones/seguros con búsqueda, filtros y paginación.
      */
     public function index(Request $request): JsonResponse
     {
@@ -94,7 +98,7 @@ class QuotationController extends Controller
     }
 
     /**
-     * Retrieve a specific quotation.
+     * Consulta del detalle de una cotización puntual.
      */
     public function show(Quotation $quotation): JsonResponse
     {
@@ -105,7 +109,7 @@ class QuotationController extends Controller
     }
 
     /**
-     * Transition quotation from 'Cotizado' to 'Contratado' via ContractQuotationAction.
+     * Confirmación y transición de estado a 'Contratado' mediante ContractQuotationAction.
      */
     public function contract(Quotation $quotation, ContractQuotationAction $action): JsonResponse
     {
@@ -127,7 +131,7 @@ class QuotationController extends Controller
     }
 
     /**
-     * Download the quotation PDF document.
+     * Generación y descarga del comprobante oficial de cotización en PDF.
      */
     public function downloadPdf(Quotation $quotation): Response
     {

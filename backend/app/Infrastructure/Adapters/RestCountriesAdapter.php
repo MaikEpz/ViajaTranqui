@@ -9,14 +9,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+/**
+ * Adaptador de infraestructura para la obtención del catálogo de países.
+ * Implementa CountryProviderInterface y gestiona tolerancia a fallos, caché y fallbacks.
+ */
 class RestCountriesAdapter implements CountryProviderInterface
 {
+    // Endpoint primario oficial de REST Countries
     protected const PRIMARY_API_URL = 'https://restcountries.com/v3.1/all?fields=name,cca2,cca3,region,subregion,flags';
+
+    // Espejo público abierto de alta disponibilidad (dataset oficial mledoze/countries)
     protected const MIRROR_API_URL = 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json';
+
     protected const CACHE_KEY = 'rest_countries_dataset_clean_arch';
-    protected const CACHE_TTL_SECONDS = 86400; // 24 hours
+    protected const CACHE_TTL_SECONDS = 86400; // Caché de 24 horas
 
     /**
+     * Retorna la lista de países normalizados, utilizando caché y degradación elegante.
+     *
      * @return array<CountryData>
      */
     public function getCountries(): array
@@ -28,6 +38,9 @@ class RestCountriesAdapter implements CountryProviderInterface
         return array_map(fn (array $item) => CountryData::fromArray($item), $raw);
     }
 
+    /**
+     * Busca un país por su código ISO alpha-2 o alpha-3.
+     */
     public function findByCode(string $code): ?CountryData
     {
         $countries = $this->getCountries();
@@ -42,40 +55,57 @@ class RestCountriesAdapter implements CountryProviderInterface
         return null;
     }
 
+    /**
+     * Mecanismo de degradación elegante (Graceful Degradation):
+     * 1. Intenta la API primaria de REST Countries.
+     * 2. Si falla por timeout o formato inesperado, conmuta al espejo público.
+     * 3. Como última línea de defensa, utiliza el catálogo empaquetado offline.
+     */
     protected function fetchCountries(): array
     {
-        // 1. Try Primary REST Countries API
+        // Nivel 1: Intento con la API primaria
         try {
             $response = Http::timeout(5)->get(self::PRIMARY_API_URL);
 
             if ($response->successful()) {
                 $data = $response->json();
                 if ($this->isValidCountriesPayload($data)) {
+                    Log::info('RestCountriesAdapter: catálogo cargado exitosamente desde API primaria');
                     return $this->normalizeCountries($data);
                 }
+
+                Log::warning('RestCountriesAdapter: respuesta inesperada en API primaria, activando contingencia', [
+                    'status' => $response->status(),
+                    'snippet' => is_array($data) ? array_slice($data, 0, 2) : $data,
+                ]);
             }
         } catch (Throwable $e) {
-            Log::warning('RestCountriesAdapter primary API unreachable: ' . $e->getMessage());
+            Log::warning('RestCountriesAdapter: timeout o error de conexión con API primaria: ' . $e->getMessage());
         }
 
-        // 2. Try Public Open Mirror
+        // Nivel 2: Intento con el espejo público abierto
         try {
             $mirrorResponse = Http::timeout(5)->get(self::MIRROR_API_URL);
 
             if ($mirrorResponse->successful()) {
                 $mirrorData = $mirrorResponse->json();
                 if ($this->isValidCountriesPayload($mirrorData)) {
+                    Log::info('RestCountriesAdapter: contingencia exitosa con espejo público abierto');
                     return $this->normalizeCountries($mirrorData);
                 }
             }
         } catch (Throwable $e) {
-            Log::warning('RestCountriesAdapter mirror API unreachable: ' . $e->getMessage());
+            Log::warning('RestCountriesAdapter: fallo de conexión con espejo público: ' . $e->getMessage());
         }
 
-        // 3. Bundled Fallback Dataset
+        // Nivel 3: Catálogo empaquetado offline para garantizar 100% de disponibilidad
+        Log::warning('RestCountriesAdapter: utilizando catálogo de contingencia empaquetado offline');
         return $this->getFallbackCountries();
     }
 
+    /**
+     * Valida que la respuesta sea un arreglo con registros válidos de países.
+     */
     protected function isValidCountriesPayload(mixed $data): bool
     {
         if (!is_array($data) || empty($data)) {
@@ -90,6 +120,9 @@ class RestCountriesAdapter implements CountryProviderInterface
         return is_array($first) && isset($first['name']);
     }
 
+    /**
+     * Normaliza la estructura heterogénea de la API externa en campos limpios.
+     */
     protected function normalizeCountries(array $rawCountries): array
     {
         $countries = [];
@@ -120,11 +153,15 @@ class RestCountriesAdapter implements CountryProviderInterface
             ];
         }
 
+        // Ordenar alfabéticamente por nombre común
         usort($countries, fn ($a, $b) => strcmp($a['name'], $b['name']));
 
         return $countries;
     }
 
+    /**
+     * Homologa las regiones y subregiones de la API a las categorías tarifarias del negocio.
+     */
     protected function resolveEffectiveRegion(string $region, ?string $subregion): string
     {
         if ($subregion === 'South America') {
@@ -145,6 +182,9 @@ class RestCountriesAdapter implements CountryProviderInterface
         return $region ?: 'Other';
     }
 
+    /**
+     * Catálogo empaquetado offline de respaldo inmediato.
+     */
     protected function getFallbackCountries(): array
     {
         return [

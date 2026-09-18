@@ -8,9 +8,9 @@ beforeEach(function () {
     $this->action = new CalculateQuotationAction();
 });
 
-test('it calculates basic pricing with USD 3 per day correctly as PricingBreakdownData DTO', function () {
+test('calcula correctamente la tarifa base de USD 3 por día retornando el DTO PricingBreakdownData', function () {
     $start = Carbon::parse('2026-10-01');
-    $end = Carbon::parse('2026-10-10'); // 10 days inclusive
+    $end = Carbon::parse('2026-10-10'); // 10 días inclusivos
 
     $pricing = $this->action->execute('South America', $start, $end);
 
@@ -22,7 +22,8 @@ test('it calculates basic pricing with USD 3 per day correctly as PricingBreakdo
         ->and($pricing->totalAmount)->toBe(30.00);
 });
 
-test('it calculates Spain pricing with 20% Europe surcharge as defined in business requirements', function () {
+test('calcula la cotización para España con 20% de recargo de Europa según el enunciado de la prueba', function () {
+    // Ejemplo del enunciado: Viaje de 10 días a España: Tarifa base $30 + Recargo Europa 20% ($6) = Total $36
     $start = Carbon::parse('2026-10-01');
     $end = Carbon::parse('2026-10-10');
 
@@ -35,7 +36,7 @@ test('it calculates Spain pricing with 20% Europe surcharge as defined in busine
         ->and($pricing->totalAmount)->toBe(36.00);
 });
 
-test('it correctly applies surcharges across all defined geographical regions in domain action', function (string $region, float $expectedSurcharge) {
+test('aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas', function (string $region, float $expectedSurcharge) {
     $start = Carbon::parse('2026-10-01');
     $end = Carbon::parse('2026-10-10');
 
@@ -56,7 +57,7 @@ test('it correctly applies surcharges across all defined geographical regions in
     ['Oceania',       25.0],
 ]);
 
-test('it throws domain InvalidTravelDatesException when return date is before departure date', function () {
+test('lanza la excepción de dominio InvalidTravelDatesException cuando la fecha de regreso es anterior a la salida', function () {
     $start = Carbon::parse('2026-10-10');
     $end = Carbon::parse('2026-10-05');
 

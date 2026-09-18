@@ -4,6 +4,10 @@ namespace App\Domain\Actions;
 
 use App\Domain\Contracts\CountryProviderInterface;
 
+/**
+ * Caso de uso: Consulta del catálogo de países disponibles.
+ * Comunica el dominio con la infraestructura mediante el contrato CountryProviderInterface.
+ */
 class GetCountriesAction
 {
     public function __construct(
@@ -11,7 +15,7 @@ class GetCountriesAction
     ) {}
 
     /**
-     * Retrieve all destination countries through inverted contract.
+     * Obtiene el listado normalizado de países para cotizaciones.
      *
      * @return array<\App\Domain\DTOs\CountryData>
      */
