@@ -9,7 +9,7 @@
         </p>
       </div>
 
-      <button class="btn btn-primary" @click="store.activeTab = 'create'">
+      <button class="btn btn-primary" @click="store.goHome()">
         + Nueva Cotización
       </button>
     </div>

@@ -14,19 +14,28 @@
         <button class="alert-close" @click="store.clearAlerts">✕</button>
       </div>
 
-      <!-- Pestaña 1: Nueva Cotización -->
-      <section v-if="store.activeTab === 'create'">
-        <!-- Hero Editorial con Cápsula de Búsqueda Flotante -->
+      <!-- VISTA 1: HOME / PRINCIPAL (Estilo Editorial Minimalista) -->
+      <section v-if="store.activeTab === 'home'">
+        <!-- Hero Editorial con Cápsula Elevada y CTA Único de Cotización -->
         <TravelHero
           @selectDestination="onSelectDestination"
           @updateDates="onUpdateDates"
         />
 
-        <!-- Formulario Detallado & Resumen de Cotización -->
-        <QuoteForm ref="quoteFormRef" @quoteCreated="onQuoteCreated" />
+        <!-- Estructura y Tarifas de Seguros en Vista Principal -->
+        <InsurancePricingSection
+          :livePreview="livePreview"
+          :liveCountryName="liveCountryName"
+          @requestQuote="onPriceQuoteRequest"
+        />
       </section>
 
-      <!-- Pestaña 2: Consulta y Gestión de Seguros -->
+      <!-- VISTA 2: CHECKOUT / EMISIÓN Y REVISIÓN (Nueva Vista dentro de la misma página) -->
+      <section v-else-if="store.activeTab === 'checkout'">
+        <CheckoutView @quoteCreated="onQuoteCreated" />
+      </section>
+
+      <!-- VISTA 3: CONSULTAR SEGUROS Y MÉTRICAS -->
       <section v-else-if="store.activeTab === 'list'">
         <QuotationsList />
       </section>
@@ -55,29 +64,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useQuotationStore } from './stores/quotationStore';
 import Navbar from './components/Navbar.vue';
 import TravelHero from './components/TravelHero.vue';
-import QuoteForm from './components/QuoteForm.vue';
-import QuoteResultModal from './components/QuoteResultModal.vue';
+import InsurancePricingSection from './components/InsurancePricingSection.vue';
+import CheckoutView from './components/CheckoutView.vue';
 import QuotationsList from './components/QuotationsList.vue';
-import type { Quotation } from './types/quotation';
+import QuoteResultModal from './components/QuoteResultModal.vue';
+import type { Quotation, PricingBreakdown } from './types/quotation';
 
 const store = useQuotationStore();
 const modalQuote = ref<Quotation | null>(null);
-const quoteFormRef = ref<InstanceType<typeof QuoteForm> | null>(null);
+const livePreview = ref<PricingBreakdown | null>(null);
+const liveCountryName = ref<string>('');
 
-function onSelectDestination(countryCode: string): void {
-  if (quoteFormRef.value) {
-    quoteFormRef.value.selectCountryByCode(countryCode);
+onMounted(async () => {
+  await store.fetchCountries();
+  refreshPreview();
+});
+
+async function refreshPreview() {
+  const code = store.tripDraft?.countryCode || 'ESP';
+  const country = store.countries.find((c) => c.code === code);
+  if (country) {
+    liveCountryName.value = `${country.name} (${country.region})`;
+    const start = store.tripDraft?.startDate;
+    const end = store.tripDraft?.endDate;
+    if (start && end && end >= start) {
+      livePreview.value = await store.calculatePreview(country.region, start, end);
+    }
   }
 }
 
+function onSelectDestination(countryCode: string): void {
+  store.setTripDraft({ countryCode });
+  refreshPreview();
+}
+
 function onUpdateDates(payload: { start: string; end: string }): void {
-  if (quoteFormRef.value) {
-    quoteFormRef.value.setDates(payload.start, payload.end);
-  }
+  store.setTripDraft({ startDate: payload.start, endDate: payload.end });
+  refreshPreview();
+}
+
+function onPriceQuoteRequest(): void {
+  store.goToCheckout();
 }
 
 function onQuoteCreated(quotation: Quotation): void {
@@ -118,7 +149,7 @@ function closeModal(): void {
 
 .app-footer {
   background-color: #ffffff;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-color);
   padding: 36px 0;
   margin-top: auto;
   text-align: center;

@@ -10,7 +10,7 @@
       <div class="hero-scrim"></div>
     </div>
 
-    <!-- Contenido Editorial Centrado -->
+    <!-- Contenido Editorial Centrado (Sin botón redundante, estilo minimalista puro) -->
     <div class="hero-inner-content">
       <h1 class="editorial-headline">
         Tu tranquilidad en cada destino
@@ -18,15 +18,9 @@
       <p class="editorial-subheading">
         Las ciudades que sueñas, los rincones que descubres: viaja seguro con asistencia médica internacional y validez consular.
       </p>
-
-      <div class="hero-center-cta">
-        <button type="button" class="editorial-pill-btn" @click="scrollToForm">
-          Cotizar ahora
-        </button>
-      </div>
     </div>
 
-    <!-- Barra Cápsula Flotante (Inspirada en Mr & Mrs Smith / Airbnb Luxe) -->
+    <!-- Barra Cápsula Flotante (Elevada más arriba, única acción principal de cotización) -->
     <div class="floating-capsule-wrapper">
       <div class="search-capsule">
         <!-- Columna 1: DESTINO -->
@@ -85,9 +79,14 @@
           </div>
         </div>
 
-        <!-- Botón Píldora Negra con Flecha -->
+        <!-- Botón Píldora Negra con Flecha (El ÚNICO Call To Action) -->
         <div class="capsule-col col-action">
-          <button type="button" class="capsule-action-btn" @click="scrollToForm">
+          <button
+            type="button"
+            id="btn-capsule-cotizar"
+            class="capsule-action-btn"
+            @click="onCotizarClick"
+          >
             <span>Cotizar</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <line x1="5" y1="12" x2="19" y2="12"/>
@@ -101,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useQuotationStore } from '../stores/quotationStore';
 
 const emit = defineEmits<{
@@ -112,25 +111,44 @@ const emit = defineEmits<{
 const store = useQuotationStore();
 
 const todayDate = new Date().toISOString().split('T')[0];
-const selectedCode = ref<string>('');
-const startDate = ref<string>('');
-const endDate = ref<string>('');
+const selectedCode = ref<string>(store.tripDraft?.countryCode || '');
+const startDate = ref<string>(store.tripDraft?.startDate || '');
+const endDate = ref<string>(store.tripDraft?.endDate || '');
+
+onMounted(async () => {
+  await store.fetchCountries();
+  if (!selectedCode.value && store.countries.length > 0) {
+    selectedCode.value = 'ESP'; // España por defecto según requerimiento técnico
+    store.setTripDraft({ countryCode: 'ESP' });
+    emit('selectDestination', 'ESP');
+  }
+  if (!startDate.value) {
+    const d1 = new Date();
+    d1.setDate(d1.getDate() + 7);
+    const d2 = new Date(d1);
+    d2.setDate(d2.getDate() + 9);
+    startDate.value = d1.toISOString().split('T')[0];
+    endDate.value = d2.toISOString().split('T')[0];
+    store.setTripDraft({ startDate: startDate.value, endDate: endDate.value });
+    emit('updateDates', { start: startDate.value, end: endDate.value });
+  }
+});
 
 function onCountrySelect() {
   if (selectedCode.value) {
+    store.setTripDraft({ countryCode: selectedCode.value });
     emit('selectDestination', selectedCode.value);
   }
 }
 
 function emitDates() {
+  store.setTripDraft({ startDate: startDate.value, endDate: endDate.value });
   emit('updateDates', { start: startDate.value, end: endDate.value });
 }
 
-function scrollToForm() {
-  const formElement = document.getElementById('quotation-interactive-form');
-  if (formElement) {
-    formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+function onCotizarClick() {
+  // Transiciona inmediatamente a la nueva vista de emisión (Checkout)
+  store.goToCheckout(selectedCode.value, startDate.value, endDate.value);
 }
 </script>
 
@@ -139,13 +157,13 @@ function scrollToForm() {
   position: relative;
   border-radius: var(--radius-xl);
   overflow: visible;
-  margin-bottom: 72px;
+  margin-bottom: 54px;
 }
 
 .hero-image-wrapper {
   position: relative;
   width: 100%;
-  height: 480px;
+  height: 460px;
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.12);
@@ -168,8 +186,8 @@ function scrollToForm() {
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(0, 0, 0, 0.40) 50%,
     rgba(0, 0, 0, 0.65) 100%
   );
 }
@@ -179,7 +197,7 @@ function scrollToForm() {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 80px;
+  bottom: 45px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -191,12 +209,12 @@ function scrollToForm() {
 }
 
 .editorial-headline {
-  font-size: 3.2rem;
+  font-size: 3.3rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  max-width: 820px;
-  margin-bottom: 14px;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  max-width: 840px;
+  margin-bottom: 16px;
   color: #ffffff;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
 }
@@ -205,44 +223,19 @@ function scrollToForm() {
   font-size: 1.15rem;
   font-weight: 400;
   max-width: 680px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.92);
-  margin-bottom: 24px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.94);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
 
-.hero-center-cta {
-  display: flex;
-  justify-content: center;
-}
-
-.editorial-pill-btn {
-  background-color: #000000;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 12px 28px;
-  border-radius: var(--radius-full);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: -0.01em;
-}
-.editorial-pill-btn:hover {
-  background-color: #ffffff;
-  color: #000000;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-}
-
 /* ============================================================
-   LA CÁPSULA FLOTANTE DE BÚSQUEDA (ESTILO MR & MRS SMITH / AIRBNB)
+   LA CÁPSULA FLOTANTE DE BÚSQUEDA (SUBIDA MÁS ARRIBA)
    ============================================================ */
 .floating-capsule-wrapper {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -40px;
+  bottom: -22px; /* Subida para que monte limpiamente sobre el límite del hero */
   display: flex;
   justify-content: center;
   padding: 0 20px;
@@ -254,16 +247,16 @@ function scrollToForm() {
   align-items: center;
   background-color: #ffffff;
   border-radius: var(--radius-full);
-  box-shadow: var(--shadow-capsule);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
   padding: 8px 10px 8px 32px;
   width: 100%;
   max-width: 960px;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-capsule:hover {
-  box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 26px 55px -10px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .capsule-col {
@@ -303,7 +296,7 @@ function scrollToForm() {
   border: none;
   background: transparent;
   font-size: 0.92rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #111111;
   padding: 4px 0;
   outline: none;
@@ -328,7 +321,7 @@ function scrollToForm() {
   border: none;
   background: transparent;
   font-size: 0.88rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #111111;
   outline: none;
   font-family: inherit;
@@ -344,8 +337,8 @@ function scrollToForm() {
   border-bottom: 1px solid #e5e5e5;
   padding-bottom: 4px;
   font-size: 0.88rem;
-  font-weight: 500;
-  color: #444444;
+  font-weight: 600;
+  color: #333333;
   white-space: nowrap;
 }
 
@@ -372,7 +365,7 @@ function scrollToForm() {
 }
 
 .capsule-action-btn:hover {
-  background-color: #222222;
+  background-color: #262626;
   transform: scale(1.03);
 }
 
@@ -396,7 +389,7 @@ function scrollToForm() {
   }
   .floating-capsule-wrapper {
     position: static;
-    margin-top: -30px;
+    margin-top: -20px;
   }
   .editorial-hero {
     margin-bottom: 30px;

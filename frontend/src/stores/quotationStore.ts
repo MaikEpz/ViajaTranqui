@@ -5,6 +5,15 @@ import type { Quotation, QuotationPayload, PricingBreakdown } from '../types/quo
 import type { ApiResponse, PaginationMeta } from '../types/api';
 
 /**
+ * Borrador del itinerario seleccionado en la barra de búsqueda.
+ */
+export interface TripDraft {
+  countryCode: string;
+  startDate: string;
+  endDate: string;
+}
+
+/**
  * Estado del almacén global de cotizaciones y seguros.
  */
 export interface QuotationState {
@@ -14,7 +23,8 @@ export interface QuotationState {
   meta: PaginationMeta;
   loadingQuotations: boolean;
   currentQuote: Quotation | null;
-  activeTab: 'create' | 'list';
+  activeTab: 'home' | 'checkout' | 'list';
+  tripDraft: TripDraft;
   searchTerm: string;
   statusFilter: string;
   actionLoading: boolean;
@@ -35,7 +45,12 @@ export const useQuotationStore = defineStore('quotation', {
     },
     loadingQuotations: false,
     currentQuote: null,
-    activeTab: 'create',
+    activeTab: 'home',
+    tripDraft: {
+      countryCode: '',
+      startDate: '',
+      endDate: '',
+    },
     searchTerm: '',
     statusFilter: '',
     actionLoading: false,
@@ -190,6 +205,47 @@ export const useQuotationStore = defineStore('quotation', {
     downloadPdf(quoteId: number): void {
       const url = `${api.defaults.baseURL}/quotes/${quoteId}/pdf`;
       window.open(url, '_blank');
+    },
+
+    /**
+     * Actualiza el borrador del itinerario seleccionado por el usuario.
+     */
+    setTripDraft(data: Partial<TripDraft>): void {
+      if (!this.tripDraft) {
+        this.tripDraft = { countryCode: '', startDate: '', endDate: '' };
+      }
+      this.tripDraft = { ...this.tripDraft, ...data };
+    },
+
+    /**
+     * Transiciona a la vista de checkout y configuración de póliza.
+     */
+    goToCheckout(countryCode?: string, start?: string, end?: string): void {
+      if (!this.tripDraft) {
+        this.tripDraft = { countryCode: '', startDate: '', endDate: '' };
+      }
+      if (countryCode) this.tripDraft.countryCode = countryCode;
+      if (start) this.tripDraft.startDate = start;
+      if (end) this.tripDraft.endDate = end;
+      this.activeTab = 'checkout';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /**
+     * Retorna a la vista principal.
+     */
+    goHome(): void {
+      this.activeTab = 'home';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /**
+     * Navega a la vista de consulta de seguros.
+     */
+    goToList(): void {
+      this.activeTab = 'list';
+      this.fetchQuotations();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     /**

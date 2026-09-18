@@ -1,7 +1,7 @@
 <template>
   <header class="navbar">
     <div class="container navbar-container">
-      <div class="brand" @click="store.activeTab = 'create'">
+      <div class="brand" @click="store.goHome()">
         <span class="brand-logo-text">ViajaTranqui</span>
         <span class="brand-dot"></span>
         <span class="brand-sub">Insurance</span>
@@ -9,25 +9,27 @@
 
       <nav class="nav-tabs">
         <button
+          type="button"
           class="nav-tab-btn"
-          :class="{ active: store.activeTab === 'create' }"
-          @click="store.activeTab = 'create'"
+          :class="{ active: store.activeTab === 'home' || store.activeTab === 'checkout' }"
+          @click="store.goHome()"
         >
-          Nueva Cotización
+          <span>Inicio / Cotizar</span>
         </button>
 
         <button
+          type="button"
           class="nav-tab-btn"
           :class="{ active: store.activeTab === 'list' }"
-          @click="navigateToList"
+          @click="store.goToList()"
         >
-          Consultar Seguros
+          <span>Consultar Seguros</span>
           <span v-if="store.quotations.length > 0" class="tab-badge">{{ store.meta.total }}</span>
         </button>
       </nav>
 
       <div class="nav-extra">
-        <span class="support-label">Asistencia 24/7</span>
+        <span class="support-label">Asistencia Consular 24/7</span>
       </div>
     </div>
   </header>
@@ -37,17 +39,12 @@
 import { useQuotationStore } from '../stores/quotationStore';
 
 const store = useQuotationStore();
-
-function navigateToList() {
-  store.activeTab = 'list';
-  store.fetchQuotations();
-}
 </script>
 
 <style scoped>
 .navbar {
   background-color: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
   padding: 16px 0;
   position: sticky;
   top: 0;
@@ -93,7 +90,7 @@ function navigateToList() {
 .nav-tabs {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: var(--bg-subtle);
   padding: 4px;
   border-radius: var(--radius-full);
 }
@@ -122,7 +119,7 @@ function navigateToList() {
 .nav-tab-btn.active {
   background-color: #ffffff;
   color: #111111;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .tab-badge {
