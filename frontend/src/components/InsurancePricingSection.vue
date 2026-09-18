@@ -86,8 +86,8 @@ onUnmounted(() => {
 
 <style scoped>
 .minimal-pricing-bar {
-  margin-top: 48px;
-  margin-bottom: 48px;
+  margin-top: 36px;
+  margin-bottom: 16px;
   background-color: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);

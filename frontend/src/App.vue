@@ -74,9 +74,8 @@ onMounted(async () => {
 }
 
 .main-content {
-  flex: 1;
-  padding-top: 32px;
-  padding-bottom: 64px;
+  padding-top: 24px;
+  padding-bottom: 12px;
 }
 
 .alert-close {
@@ -96,10 +95,10 @@ onMounted(async () => {
 .app-footer {
   background-color: #ffffff;
   border-top: 1px solid var(--border-color);
-  padding: 36px 0;
-  margin-top: auto;
+  padding: 22px 0;
+  margin-top: 20px;
   text-align: center;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
