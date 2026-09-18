@@ -167,6 +167,9 @@ function onCotizarClick() {
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(28px);
+  animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
 }
 
 .hero-bg-img {
@@ -217,6 +220,9 @@ function onCotizarClick() {
   margin-bottom: 16px;
   color: #ffffff;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.24s forwards;
 }
 
 .editorial-subheading {
@@ -226,10 +232,13 @@ function onCotizarClick() {
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.94);
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(24px);
+  animation: heroFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.38s forwards;
 }
 
 /* ============================================================
-   LA CÁPSULA FLOTANTE DE BÚSQUEDA (SUBIDA MÁS ARRIBA)
+   LA CÁPSULA FLOTANTE DE BÚSQUEDA (SUBIDA MÁS ARRIBA Y ANIMADA)
    ============================================================ */
 .floating-capsule-wrapper {
   position: absolute;
@@ -240,6 +249,31 @@ function onCotizarClick() {
   justify-content: center;
   padding: 0 20px;
   z-index: 10;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: capsuleFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.52s forwards;
+}
+
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes capsuleFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .search-capsule {

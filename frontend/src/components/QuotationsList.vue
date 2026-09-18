@@ -236,6 +236,20 @@ function formatDateTime(dateTimeStr: string | null): string {
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
   padding: 40px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: listFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes listFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .list-header {

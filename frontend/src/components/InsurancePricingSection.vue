@@ -1,5 +1,9 @@
 <template>
-  <div class="minimal-pricing-bar">
+  <div
+    ref="sectionRef"
+    class="minimal-pricing-bar"
+    :class="{ 'is-revealed': isRevealed }"
+  >
     <div class="pricing-header-compact">
       <span class="pricing-label">Estructura de Tarifas</span>
       <span class="pricing-sub">Tarifa base diaria computada por días continuos y recargo regional oficial</span>
@@ -20,23 +24,23 @@
       <div class="rate-surcharges-box">
         <span class="box-micro-label">RECARGOS POR CONTINENTE</span>
         <div class="surcharges-pills">
-          <div class="s-pill">
+          <div class="s-pill" style="--stagger-idx: 0;">
             <span class="s-name">América del Sur</span>
             <span class="s-pct">0%</span>
           </div>
-          <div class="s-pill">
+          <div class="s-pill" style="--stagger-idx: 1;">
             <span class="s-name">Norteamérica</span>
             <span class="s-pct">+15%</span>
           </div>
-          <div class="s-pill pill-europe">
+          <div class="s-pill pill-europe" style="--stagger-idx: 2;">
             <span class="s-name">Europa</span>
             <span class="s-pct">+20%</span>
           </div>
-          <div class="s-pill">
+          <div class="s-pill" style="--stagger-idx: 3;">
             <span class="s-name">África</span>
             <span class="s-pct">+20%</span>
           </div>
-          <div class="s-pill">
+          <div class="s-pill" style="--stagger-idx: 4;">
             <span class="s-name">Asia / Oceanía</span>
             <span class="s-pct">+25%</span>
           </div>
@@ -47,7 +51,37 @@
 </template>
 
 <script setup lang="ts">
-// Sección puramente minimalista de tarifas informativas
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const sectionRef = ref<HTMLElement | null>(null);
+const isRevealed = ref(false);
+
+let observer: IntersectionObserver | null = null;
+
+onMounted(() => {
+  if (sectionRef.value) {
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Activar la animación al comenzar a scrollear hacia abajo y entrar en viewport
+          if (entry.isIntersecting) {
+            isRevealed.value = true;
+            observer?.disconnect();
+          }
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+    observer.observe(sectionRef.value);
+  }
+});
+
+onUnmounted(() => {
+  observer?.disconnect();
+});
 </script>
 
 <style scoped>
@@ -59,6 +93,19 @@
   border-radius: var(--radius-xl);
   padding: 24px 32px;
   box-shadow: var(--shadow-sm);
+
+  /* Animación de entrada al scrollear hacia abajo */
+  opacity: 0;
+  transform: translateY(38px);
+  transition:
+    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.minimal-pricing-bar.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .pricing-header-compact {
@@ -95,6 +142,16 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s,
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+}
+
+.minimal-pricing-bar.is-revealed .rate-base-box {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .box-micro-label {
@@ -131,6 +188,12 @@
   height: 44px;
   background-color: var(--border-subtle);
   flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease 0.18s;
+}
+
+.minimal-pricing-bar.is-revealed .bar-divider {
+  opacity: 1;
 }
 
 .rate-surcharges-box {
@@ -155,7 +218,18 @@
   padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 0.8rem;
-  transition: border-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.minimal-pricing-bar.is-revealed .s-pill {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(0.2s + (var(--stagger-idx, 0) * 0.06s));
 }
 
 .s-pill:hover {
