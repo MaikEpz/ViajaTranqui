@@ -214,7 +214,7 @@ El sistema implementa validaciones cruzadas en **Frontend** y **Backend** (`Stor
 
 #### 1. Clonar el repositorio
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/MaikEpz/ViajaTranqui.git
 cd ViajaTranqui
 ```
 
@@ -390,6 +390,6 @@ Si este sistema evolucionara hacia una plataforma comercial en producción, se r
 
 ## 10. Datos de Entrega
 
-- **Repositorio GitHub:** Compartido con `vrubio@gestionsegura.com.ec`
+- **Repositorio GitHub:** [https://github.com/MaikEpz/ViajaTranqui](https://github.com/MaikEpz/ViajaTranqui) (Compartido con `vrubio@gestionsegura.com.ec`)
 - **Autor / Candidato:** Desarrollador Full Stack (Laravel + Vue.js)
 - **Licencia:** Software de evaluación técnica para Compañía de Seguros.
