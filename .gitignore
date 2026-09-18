@@ -31,3 +31,6 @@ backend/storage/framework/views/
 
 # Scratch / temp
 test_quote.pdf
+
+# Enunciados y especificaciones
+*.docx
