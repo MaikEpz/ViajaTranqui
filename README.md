@@ -27,10 +27,13 @@ backend/app/
 │       ├── ContractQuotationAction.php     # Transición de estado con invariantes de dominio
 │       └── GetCountriesAction.php          # Caso de uso de obtención de catálogo
 │
-├── Infrastructure/                         # 🔌 CAPA DE INFRAESTRUCTURA (I/O, APIs externas, PDFs)
+├── Infrastructure/                         # 🔌 CAPA DE INFRAESTRUCTURA (I/O, APIs externas)
 │   └── Adapters/
-│       ├── RestCountriesAdapter.php        # Implementa CountryProviderInterface (Caché + Fallbacks)
-│       └── DomPdfQuotationGenerator.php    # Adaptador para renderizado de PDFs
+│       └── RestCountriesAdapter.php        # Implementa CountryProviderInterface (Caché 24h + Fallbacks)
+│
+├── Services/                               # Servicios auxiliares de aplicación
+│   ├── QuotationPdfService.php             # Renderizado y descarga de comprobantes en PDF
+│   └── QuotationCalculationService.php    # Servicio de cálculo complementario
 │
 ├── Http/                                   # 🌐 CAPA DE ENTRADA / PRESENTACIÓN
 │   ├── Controllers/                        # Controladores delgados (Slim Controllers)
@@ -50,17 +53,17 @@ backend/app/
    - Cada operación clave del sistema es una clase individual con un único método ejecutor (`execute()`). Esto respeta el principio de responsabilidad única (**SRP**) y permite testear cada flujo sin acoplarse a controladores HTTP.
 2. **Inversión de Dependencias (*DIP*) con Contratos**:
    - La capa de dominio define el contrato `CountryProviderInterface`.
-   - La capa de infraestructura provee la implementación `RestCountriesAdapter` que se registra en el contenedor de servicios de Laravel (`AppServiceProvider`). El dominio desconoce si los países provienen de una API externa, una base de datos local o un archivo JSON.
+   - La capa de infraestructura provee la implementación `RestCountriesAdapter` que se registra en el contenedor de servicios de Laravel (`AppServiceProvider`). El dominio desconoce si los países provienen de una API externa, un espejo público o un archivo local.
 3. **Data Transfer Objects (*DTOs*) Inmutables**:
    - Se utilizan clases `readonly` de PHP 8.4 (`QuotationData`, `PricingBreakdownData`, `CountryData`) para transportar información validada entre capas, evitando el paso de arrays asociativos sin tipar.
 4. **Excepciones de Dominio**:
    - Errores de negocio como fechas inconsistentes (`InvalidTravelDatesException`) o intentos de doble contratación (`QuotationAlreadyContractedException`) son modelados explícitamente en el dominio y capturados por la capa HTTP.
 5. **Resiliencia con Degradación Elegante (*Graceful Degradation*)**:
    - `RestCountriesAdapter` implementa un circuito de tolerancia a fallos:
-     1. Petición con timeout a la API primaria de REST Countries.
+     1. Petición con timeout de 5s a la API primaria de REST Countries.
      2. En caso de timeout o respuesta inesperada (como mensajes de depreciación de versión), conmuta automáticamente al espejo abierto `mledoze/countries`.
-     3. Catálogo empaquetado offline como última línea de defensa.
-     4. Caché de 24 horas en Laravel para máximo rendimiento.
+     3. Catálogo empaquetado offline como última línea de defensa ante cortes totales de internet.
+     4. Caché de 24 horas en Laravel para máximo rendimiento y reducción de tráfico externo.
 
 ---
 
@@ -95,7 +98,7 @@ docker compose exec backend php artisan migrate
 docker compose exec backend php artisan db:seed
 ```
 
-### Paso 4: Levantar el Frontend (Vue 3 + Vite + Pinia)
+### Paso 4: Levantar el Frontend (Vue 3 + TypeScript + Vite + Pinia)
 En una terminal:
 ```bash
 cd frontend
@@ -119,28 +122,28 @@ docker compose exec backend ./vendor/bin/pest
 Resultado verificado:
 ```text
 PASS  Tests\Unit\CalculateQuotationActionTest
-✓ it calculates basic pricing with USD 3 per day correctly as PricingBreakdownData DTO
-✓ it calculates Spain pricing with 20% Europe surcharge as defined in business requirements
-✓ it correctly applies surcharges across all defined geographical regions in domain action
-✓ it throws domain InvalidTravelDatesException when return date is before departure date
+✓ calcula correctamente la tarifa base de USD 3 por día retornando el DTO PricingBreakdownData
+✓ calcula la cotización para España con 20% de recargo de Europa según requerimientos de negocio
+✓ aplica correctamente los recargos porcentuales en todas las regiones geográficas definidas
+✓ lanza la excepción de dominio InvalidTravelDatesException cuando la fecha de regreso es anterior a la de salida
 
 PASS  Tests\Unit\ContractQuotationActionTest
-✓ it transitions a quotation from Cotizado to Contratado with timestamp
-✓ it throws QuotationAlreadyContractedException when quotation is already contracted
+✓ transiciona una cotización de Cotizado a Contratado registrando la marca temporal
+✓ lanza la excepción QuotationAlreadyContractedException cuando se intenta contratar nuevamente
 
 PASS  Tests\Unit\QuotationCalculationServiceTest
-✓ it calculates basic pricing with USD 3 per day correctly
-✓ it calculates pricing for Spain with 20% Europe surcharge as defined in specifications
-✓ it correctly applies surcharges across all defined geographical regions
-✓ it throws InvalidArgumentException when end date is earlier than start date
+✓ calcula correctamente la tarifa básica con USD 3 por día
+✓ calcula la cotización para España con 20% de recargo Europa según especificación
+✓ aplica correctamente los recargos en todas las regiones geográficas definidas
+✓ lanza InvalidArgumentException cuando la fecha de retorno es anterior a la de salida
 
 PASS  Tests\Feature\QuotationApiTest
-✓ it can preview a quotation calculation via API
-✓ it validates required fields when storing a quotation
-✓ it creates a quotation with Cotizado status
-✓ it can transition quotation to Contratado status
-✓ it allows downloading quotation PDF
-✓ it returns countries list from API
+✓ puede previsualizar el cálculo de la tarifa de una cotización vía API
+✓ valida los campos obligatorios al registrar una cotización
+✓ crea y almacena una cotización con estado inicial Cotizado
+✓ puede confirmar y transicionar una cotización al estado Contratado
+✓ permite descargar el comprobante de cotización en formato PDF
+✓ retorna el catálogo de países desde el endpoint de la API
 
 Tests:    28 passed (1096 assertions)
 ```
