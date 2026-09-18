@@ -56,31 +56,34 @@ import { ref, onMounted, onUnmounted } from 'vue';
 const sectionRef = ref<HTMLElement | null>(null);
 const isRevealed = ref(false);
 
-let observer: IntersectionObserver | null = null;
+function updateRevealState() {
+  // Al llegar al tope superior de la página, desaparece de nuevo
+  if (window.scrollY <= 30) {
+    isRevealed.value = false;
+    return;
+  }
+
+  // Al scrollear hacia abajo y entrar en viewport, aparece
+  if (sectionRef.value) {
+    const rect = sectionRef.value.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    if (rect.top < windowHeight - 30 && rect.bottom > 0) {
+      isRevealed.value = true;
+    } else if (rect.top >= windowHeight) {
+      isRevealed.value = false;
+    }
+  }
+}
 
 onMounted(() => {
-  if (sectionRef.value) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Activar la animación al comenzar a scrollear hacia abajo y entrar en viewport
-          if (entry.isIntersecting) {
-            isRevealed.value = true;
-            observer?.disconnect();
-          }
-        });
-      },
-      {
-        threshold: 0.12,
-        rootMargin: '0px 0px -40px 0px',
-      }
-    );
-    observer.observe(sectionRef.value);
-  }
+  window.addEventListener('scroll', updateRevealState, { passive: true });
+  window.addEventListener('resize', updateRevealState, { passive: true });
+  updateRevealState();
 });
 
 onUnmounted(() => {
-  observer?.disconnect();
+  window.removeEventListener('scroll', updateRevealState);
+  window.removeEventListener('resize', updateRevealState);
 });
 </script>
 
@@ -94,18 +97,20 @@ onUnmounted(() => {
   padding: 24px 32px;
   box-shadow: var(--shadow-sm);
 
-  /* Animación de entrada al scrollear hacia abajo */
+  /* Animación bidireccional: aparece al scrollear y desaparece al llegar al tope */
   opacity: 0;
   transform: translateY(38px);
   transition:
-    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
+  pointer-events: none;
 }
 
 .minimal-pricing-bar.is-revealed {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .pricing-header-compact {

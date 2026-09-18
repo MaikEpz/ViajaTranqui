@@ -35,7 +35,13 @@
       @close="store.closeQuoteModal()"
     />
 
-    <footer class="app-footer">
+    <footer
+      class="app-footer"
+      :class="{
+        'footer-home-scroll': store.activeTab === 'home',
+        'is-revealed': isFooterRevealed
+      }"
+    >
       <div class="container footer-container">
         <div class="footer-brand-row">
           <span class="footer-logo">ViajaTranqui</span>
@@ -51,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useQuotationStore } from './stores/quotationStore';
 import Navbar from './components/Navbar.vue';
 import TravelHero from './components/TravelHero.vue';
@@ -60,9 +66,24 @@ import QuoteModal from './components/QuoteModal.vue';
 import QuotationsList from './components/QuotationsList.vue';
 
 const store = useQuotationStore();
+const isFooterRevealed = ref(false);
+
+function handleScroll() {
+  if (window.scrollY <= 30) {
+    isFooterRevealed.value = false;
+  } else {
+    isFooterRevealed.value = true;
+  }
+}
 
 onMounted(async () => {
   await store.fetchCountries();
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
 });
 </script>
 
@@ -100,6 +121,21 @@ onMounted(async () => {
   text-align: center;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.footer-home-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.footer-home-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .footer-brand-row {
