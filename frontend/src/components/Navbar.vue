@@ -2,9 +2,12 @@
   <header class="navbar">
     <div class="container navbar-container">
       <div class="brand" @click="store.goHome()">
+        <div class="brand-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+          </svg>
+        </div>
         <span class="brand-logo-text">ViajaTranqui</span>
-        <span class="brand-dot"></span>
-        <span class="brand-sub">Insurance</span>
       </div>
 
       <nav class="nav-tabs">
@@ -56,31 +59,32 @@ const store = useQuotationStore();
 .brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
+}
+
+.brand-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #111111;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand:hover .brand-logo-icon {
+  transform: rotate(-6deg) scale(1.06);
 }
 
 .brand-logo-text {
   font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
   color: #111111;
-}
-
-.brand-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: #111111;
-}
-
-.brand-sub {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #717171;
 }
 
 .nav-tabs {
