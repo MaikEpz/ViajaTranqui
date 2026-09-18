@@ -1,0 +1,32 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Environment and sensitive files
+.env
+backend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Dependencies
+backend/vendor/
+frontend/node_modules/
+
+# Frontend Build
+frontend/dist/
+
+# Logs and caches
+*.log
+backend/storage/*.key
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Scratch / temp
+test_quote.pdf

@@ -1,0 +1,54 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: viajatranqui_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: viajatranqui
+      DB_USERNAME: viaja_user
+      DB_PASSWORD: secret
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - viajatranqui_net
+
+  mysql:
+    image: mysql:8.0
+    container_name: viajatranqui_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: viajatranqui
+      MYSQL_USER: viaja_user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root_secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "viaja_user", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - viajatranqui_net
+
+networks:
+  viajatranqui_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
