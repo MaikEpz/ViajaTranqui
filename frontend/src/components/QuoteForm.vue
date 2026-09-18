@@ -1,15 +1,12 @@
 <template>
-  <div class="quote-form-layout">
+  <div id="quotation-interactive-form" class="quote-form-layout">
     <!-- Form Card -->
     <div class="card form-card">
       <div class="card-header">
-        <div class="header-tag">
-          <span class="tag-plane">✈️</span>
-          <span>Configurador de Póliza de Viaje</span>
-        </div>
-        <h2 class="card-title">Cotizar Seguro de Viaje Internacional</h2>
+        <span class="editorial-category">Cotizador Oficial</span>
+        <h2 class="card-title">Configuración de la Póliza</h2>
         <p class="card-subtitle">
-          Personalice su cobertura completando los datos del pasajero y su itinerario de viaje.
+          Ingrese los datos requeridos para generar el cálculo actuarial y emitir el certificado oficial de cobertura.
         </p>
       </div>
 
@@ -17,10 +14,10 @@
         <!-- 1. Datos del Asegurado -->
         <div class="section-block">
           <div class="section-header">
-            <span class="step-num">1</span>
+            <span class="step-num">01</span>
             <div>
-              <h3>Pasajero Principal (Asegurado)</h3>
-              <p class="section-subtext">Datos oficiales para la emisión legal del comprobante</p>
+              <h3>Información del Asegurado</h3>
+              <p class="section-subtext">Titular de la póliza y beneficiario principal</p>
             </div>
           </div>
 
@@ -38,7 +35,7 @@
                 placeholder="Ej. Carlos Andrés"
                 required
               />
-              <span v-if="errors.first_name" class="form-error">⚠️ {{ errors.first_name }}</span>
+              <span v-if="errors.first_name" class="form-error">{{ errors.first_name }}</span>
             </div>
 
             <div class="form-group">
@@ -54,14 +51,14 @@
                 placeholder="Ej. Mendoza Morales"
                 required
               />
-              <span v-if="errors.last_name" class="form-error">⚠️ {{ errors.last_name }}</span>
+              <span v-if="errors.last_name" class="form-error">{{ errors.last_name }}</span>
             </div>
           </div>
 
           <div class="grid-2">
             <div class="form-group">
               <label class="form-label" for="identification_number">
-                N° de Identificación / Pasaporte / DNI <span class="required">*</span>
+                Cédula / Pasaporte / DNI <span class="required">*</span>
               </label>
               <input
                 id="identification_number"
@@ -72,7 +69,7 @@
                 placeholder="Ej. 1728193842"
                 required
               />
-              <span v-if="errors.identification_number" class="form-error">⚠️ {{ errors.identification_number }}</span>
+              <span v-if="errors.identification_number" class="form-error">{{ errors.identification_number }}</span>
             </div>
 
             <div class="form-group">
@@ -88,13 +85,13 @@
                 :max="todayDate"
                 required
               />
-              <span v-if="errors.birth_date" class="form-error">⚠️ {{ errors.birth_date }}</span>
+              <span v-if="errors.birth_date" class="form-error">{{ errors.birth_date }}</span>
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="email">
-              Correo Electrónico para envío de póliza <span class="required">*</span>
+              Correo Electrónico <span class="required">*</span>
             </label>
             <input
               id="email"
@@ -102,43 +99,27 @@
               type="email"
               class="form-control"
               :class="{ 'is-invalid': errors.email }"
-              placeholder="Ej. carlos.mendoza@email.com"
+              placeholder="carlos.mendoza@email.com"
               required
             />
-            <span v-if="errors.email" class="form-error">⚠️ {{ errors.email }}</span>
+            <span v-if="errors.email" class="form-error">{{ errors.email }}</span>
           </div>
         </div>
 
-        <!-- 2. Datos del Viaje e Itinerario -->
+        <!-- 2. Datos del Viaje -->
         <div class="section-block">
           <div class="section-header">
-            <span class="step-num">2</span>
+            <span class="step-num">02</span>
             <div>
-              <h3>Itinerario y Destino del Viaje</h3>
+              <h3>Itinerario y Cobertura</h3>
               <p class="section-subtext">Seleccione país receptor y fechas de salida y retorno</p>
             </div>
           </div>
 
-          <!-- Selector de País con sugerencias rápidas -->
           <div class="form-group">
             <label class="form-label" for="destination_country">
-              País de Destino (Catálogo Oficial REST Countries) <span class="required">*</span>
+              País de Destino (REST Countries API) <span class="required">*</span>
             </label>
-
-            <!-- Píldoras de selección veloz -->
-            <div class="quick-dest-pills">
-              <span class="pills-title">Sugerencias:</span>
-              <button
-                v-for="quick in quickCountries"
-                :key="quick.code"
-                type="button"
-                class="quick-pill"
-                :class="{ active: selectedCountryCode === quick.code }"
-                @click="selectCountryByCode(quick.code)"
-              >
-                {{ quick.flag }} {{ quick.name }}
-              </button>
-            </div>
 
             <div class="country-select-wrapper">
               <select
@@ -149,7 +130,7 @@
                 @change="onCountryChange"
                 required
               >
-                <option value="" disabled>Seleccione un país de destino del mundo...</option>
+                <option value="" disabled>Seleccione un país de destino...</option>
                 <option
                   v-for="country in store.countries"
                   :key="country.code"
@@ -159,29 +140,20 @@
                 </option>
               </select>
 
-              <!-- Tarjeta visual de país seleccionado con bandera de alta resolución -->
-              <div v-if="selectedCountry" class="country-preview-card">
+              <!-- Vista previa limpia de país seleccionado -->
+              <div v-if="selectedCountry" class="country-pill-preview">
                 <img
                   v-if="selectedCountry.flag_url"
                   :src="selectedCountry.flag_url"
                   :alt="selectedCountry.name"
                   class="flag-img"
                 />
-                <div class="country-preview-info">
-                  <div class="country-title-row">
-                    <span class="country-preview-name">{{ selectedCountry.name }}</span>
-                    <span class="country-iso-badge">ISO: {{ selectedCountry.code }}</span>
-                  </div>
-                  <div class="country-region-meta">
-                    <span class="region-badge">Región: {{ selectedCountry.region }}</span>
-                    <span class="surcharge-notice">
-                      Recargo tarifario: {{ getRegionSurchargeText(selectedCountry.region) }}
-                    </span>
-                  </div>
-                </div>
+                <span class="preview-country-name">{{ selectedCountry.name }}</span>
+                <span class="preview-country-region">{{ selectedCountry.region }}</span>
+                <span class="preview-surcharge-rate">{{ getRegionSurchargeText(selectedCountry.region) }}</span>
               </div>
             </div>
-            <span v-if="errors.destination_country" class="form-error">⚠️ {{ errors.destination_country }}</span>
+            <span v-if="errors.destination_country" class="form-error">{{ errors.destination_country }}</span>
           </div>
 
           <div class="grid-2">
@@ -199,7 +171,7 @@
                 @change="triggerRecalculation"
                 required
               />
-              <span v-if="errors.start_date" class="form-error">⚠️ {{ errors.start_date }}</span>
+              <span v-if="errors.start_date" class="form-error">{{ errors.start_date }}</span>
             </div>
 
             <div class="form-group">
@@ -216,16 +188,7 @@
                 @change="triggerRecalculation"
                 required
               />
-              <span v-if="errors.end_date" class="form-error">⚠️ {{ errors.end_date }}</span>
-            </div>
-          </div>
-
-          <!-- Chip interactivo de duración si las fechas son válidas -->
-          <div v-if="preview" class="itinerary-duration-banner">
-            <div class="duration-icon">🗓️</div>
-            <div class="duration-text">
-              <strong>Itinerario confirmado: {{ preview.days_count }} días de viaje continuo</strong>
-              <span>Desde el {{ formatDate(form.start_date) }} hasta el {{ formatDate(form.end_date) }}</span>
+              <span v-if="errors.end_date" class="form-error">{{ errors.end_date }}</span>
             </div>
           </div>
         </div>
@@ -235,111 +198,78 @@
           class="btn btn-primary btn-submit"
           :disabled="store.actionLoading"
         >
-          <span v-if="store.actionLoading" class="btn-spinner-content">
-            <span class="spinner-small"></span> Calculando y guardando póliza...
-          </span>
-          <span v-else class="btn-content">
-            🛡️ Generar Cotización Oficial (PDF) →
-          </span>
+          <span v-if="store.actionLoading">Procesando cotización...</span>
+          <span v-else>Generar Cotización y Póliza Oficial ➔</span>
         </button>
       </form>
     </div>
 
-    <!-- Sidebar: Tarjeta de Cotización estilo "Boarding Pass / Voucher" -->
+    <!-- Sidebar: Resumen Editorial Minimalista -->
     <div class="sidebar-pricing">
-      <div class="boarding-pass-card">
-        <!-- Cabecera de Ticket de Vuelo -->
-        <div class="boarding-pass-header">
-          <div class="pass-brand">
-            <span class="pass-icon">✈️</span>
-            <div>
-              <span class="pass-title">VIAJATRANQUI AIRWAYS</span>
-              <span class="pass-type">POLIZA DE VIAJE & COBERTURA</span>
+      <div class="card pricing-card">
+        <span class="editorial-category">Resumen Actuarial</span>
+        <h3 class="pricing-title">Tarifa del Seguro</h3>
+
+        <div v-if="preview" class="breakdown-list">
+          <div class="price-hero-box">
+            <span class="price-hero-label">TOTAL ESTIMADO</span>
+            <div class="price-hero-val">
+              ${{ preview.total_amount.toFixed(2) }} <span class="currency">USD</span>
             </div>
+            <span class="price-hero-sub">Todo incluido • Tarifa neta garantizada</span>
           </div>
-          <span class="ticket-status-pill">Tarifa Oficial</span>
+
+          <div class="editorial-divider"></div>
+
+          <div class="breakdown-row">
+            <span class="b-label">Destino</span>
+            <span class="b-val">{{ selectedCountry ? selectedCountry.name : '-' }}</span>
+          </div>
+
+          <div class="breakdown-row">
+            <span class="b-label">Región Continental</span>
+            <span class="b-val">{{ selectedCountry ? selectedCountry.region : '-' }}</span>
+          </div>
+
+          <div class="breakdown-row">
+            <span class="b-label">Días de Cobertura</span>
+            <span class="b-val"><strong>{{ preview.days_count }} días continuos</strong></span>
+          </div>
+
+          <div class="breakdown-row">
+            <span class="b-label">Tarifa Base ($3.00/día)</span>
+            <span class="b-val">${{ preview.base_amount.toFixed(2) }}</span>
+          </div>
+
+          <div class="breakdown-row">
+            <span class="b-label">Recargo Continental ({{ preview.surcharge_percentage }}%)</span>
+            <span class="b-val">+${{ preview.surcharge_amount.toFixed(2) }}</span>
+          </div>
+
+          <div class="editorial-divider"></div>
+
+          <div class="minimal-perks">
+            <div class="perk-line">✓ Cobertura médica internacional 24/7</div>
+            <div class="perk-line">✓ Repatriación sanitaria y funeraria</div>
+            <div class="perk-line">✓ Aprobado para visados Schengen</div>
+            <div class="perk-line">✓ Descarga inmediata en PDF</div>
+          </div>
         </div>
 
-        <!-- Ruta visual de viaje -->
-        <div class="flight-route-strip">
-          <div class="route-city">
-            <span class="city-code">ORIGEN</span>
-            <span class="city-name">Ecuador</span>
-          </div>
-
-          <div class="flight-arrow-indicator">
-            <span class="flight-line"></span>
-            <span class="plane-flight">✈</span>
-            <span class="flight-line"></span>
-          </div>
-
-          <div class="route-city text-right">
-            <span class="city-code">{{ selectedCountry ? selectedCountry.code : 'DEST' }}</span>
-            <span class="city-name">{{ selectedCountry ? selectedCountry.name : 'Por seleccionar' }}</span>
-          </div>
+        <div v-else class="pricing-empty">
+          <p class="empty-note">
+            Seleccione el país de destino y las fechas del viaje para visualizar el desglose en tiempo real.
+          </p>
         </div>
 
-        <!-- Línea perforada de ticket con muescas circulares -->
-        <div class="ticket-tear-line">
-          <div class="tear-notch notch-left"></div>
-          <div class="tear-dashed"></div>
-          <div class="tear-notch notch-right"></div>
-        </div>
-
-        <!-- Cuerpo del Desglose de Precios -->
-        <div class="boarding-pass-body">
-          <div v-if="preview" class="breakdown-list">
-            <div class="breakdown-row">
-              <span class="b-label">Días de Cobertura:</span>
-              <span class="b-val highlight-days">{{ preview.days_count }} días</span>
-            </div>
-
-            <div class="breakdown-row">
-              <span class="b-label">Tarifa Base ($3.00/día):</span>
-              <span class="b-val">${{ preview.base_amount.toFixed(2) }} USD</span>
-            </div>
-
-            <div class="breakdown-row">
-              <span class="b-label">
-                Recargo {{ selectedCountry?.region }} ({{ preview.surcharge_percentage }}%):
-              </span>
-              <span class="b-val text-warning">+${{ preview.surcharge_amount.toFixed(2) }} USD</span>
-            </div>
-
-            <div class="pass-total-box">
-              <div class="total-caption">VALOR TOTAL DE LA PÓLIZA</div>
-              <div class="total-big-amount">${{ preview.total_amount.toFixed(2) }} <span class="currency">USD</span></div>
-              <div class="all-inclusive-tag">✓ Tarifa neta todo incluido (Sin sorpresas)</div>
-            </div>
-          </div>
-
-          <div v-else class="empty-pass-placeholder">
-            <div class="compass-icon">🧭</div>
-            <h4>Esperando itinerario</h4>
-            <p>Seleccione el país de destino y las fechas de viaje para calcular el precio exacto.</p>
-          </div>
-
-          <!-- Beneficios incluidos de viaje -->
-          <div class="included-perks-box">
-            <div class="perks-title">Garantías incluidas en esta póliza:</div>
-            <ul class="perks-checklist">
-              <li><span class="check-icon">✓</span> Hasta $50,000 en asistencia médica internacional</li>
-              <li><span class="check-icon">✓</span> Repatriación sanitaria y funeraria 24/7</li>
-              <li><span class="check-icon">✓</span> Compensación por pérdida o retraso de equipaje</li>
-              <li><span class="check-icon">✓</span> Aprobado y válido para visados Schengen</li>
-            </ul>
-          </div>
-
-          <!-- Referencia de recargos por continente -->
-          <div class="regional-surcharges-compact">
-            <div class="rules-caption">Matriz oficial de recargos por continente:</div>
-            <div class="rules-badges">
-              <span class="rule-badge">Sudamérica: <strong>0%</strong></span>
-              <span class="rule-badge">Norteamérica: <strong>15%</strong></span>
-              <span class="rule-badge">Europa: <strong>20%</strong></span>
-              <span class="rule-badge">África: <strong>20%</strong></span>
-              <span class="rule-badge">Asia / Oceanía: <strong>25%</strong></span>
-            </div>
+        <div class="surcharge-reference-box">
+          <span class="ref-title">Recargos oficiales por región</span>
+          <div class="ref-items">
+            <div>América del Sur: <strong>0%</strong></div>
+            <div>Norteamérica: <strong>15%</strong></div>
+            <div>Europa: <strong>20%</strong></div>
+            <div>Asia / Oceanía: <strong>25%</strong></div>
+            <div>África: <strong>20%</strong></div>
           </div>
         </div>
       </div>
@@ -364,15 +294,6 @@ const todayDate = new Date().toISOString().split('T')[0];
 const selectedCountryCode = ref<string>('');
 const selectedCountry = ref<Country | null>(null);
 const preview = ref<PricingBreakdown | null>(null);
-
-const quickCountries = [
-  { name: 'España', code: 'ESP', flag: '🇪🇸' },
-  { name: 'Francia', code: 'FRA', flag: '🇫🇷' },
-  { name: 'EE.UU.', code: 'USA', flag: '🇺🇸' },
-  { name: 'Argentina', code: 'ARG', flag: '🇦🇷' },
-  { name: 'Japón', code: 'JPN', flag: '🇯🇵' },
-  { name: 'Colombia', code: 'COL', flag: '🇨🇴' },
-];
 
 const form = reactive({
   first_name: '',
@@ -404,6 +325,12 @@ function selectCountryByCode(code: string) {
   onCountryChange();
 }
 
+function setDates(start: string, end: string) {
+  if (start) form.start_date = start;
+  if (end) form.end_date = end;
+  triggerRecalculation();
+}
+
 function onCountryChange() {
   selectedCountry.value = store.countries.find((c: Country) => c.code === selectedCountryCode.value) || null;
   triggerRecalculation();
@@ -411,23 +338,14 @@ function onCountryChange() {
 
 function getRegionSurchargeText(region: string): string {
   const map: Record<string, string> = {
-    'South America': '0% (Tarifa Base)',
-    'North America': '+15%',
-    'Europe': '+20%',
-    'Asia': '+25%',
-    'Oceania': '+25%',
-    'Africa': '+20%',
+    'South America': 'Recargo 0% (Tarifa Base)',
+    'North America': 'Recargo +15%',
+    'Europe': 'Recargo +20%',
+    'Asia': 'Recargo +25%',
+    'Oceania': 'Recargo +25%',
+    'Africa': 'Recargo +20%',
   };
-  return map[region] || '0%';
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return dateStr;
+  return map[region] || 'Recargo 0%';
 }
 
 async function triggerRecalculation() {
@@ -525,129 +443,88 @@ async function handleSubmit(): Promise<void> {
 
 defineExpose({
   selectCountryByCode,
+  setDates,
 });
 </script>
 
 <style scoped>
 .quote-form-layout {
   display: grid;
-  grid-template-columns: 1fr 410px;
-  gap: 28px;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
   align-items: start;
 }
 
 .form-card {
   background: #ffffff;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
-  padding: 32px;
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
-.header-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--color-sky-light);
-  color: var(--color-primary);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  margin-bottom: 8px;
-  border: 1px solid rgba(2, 132, 199, 0.15);
+.editorial-category {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #717171;
+  margin-bottom: 6px;
 }
 
 .card-title {
-  font-size: 1.6rem;
+  font-size: 1.85rem;
   font-weight: 800;
   color: var(--color-accent);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 .card-subtitle {
   color: var(--text-muted);
   font-size: 0.95rem;
-  margin-top: 4px;
+  margin-top: 6px;
+  line-height: 1.5;
 }
 
 .section-block {
-  padding-bottom: 24px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .section-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .step-num {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
-  flex-shrink: 0;
+  color: #111111;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
 }
 
 .section-header h3 {
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--color-accent);
+  letter-spacing: -0.02em;
 }
 .section-subtext {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
-}
-
-/* Píldoras de selección rápida */
-.quick-dest-pills {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.pills-title {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-weight: 700;
-}
-.quick-pill {
-  background: #f8fafc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  color: var(--text-main);
-  font-family: inherit;
-}
-.quick-pill:hover {
-  background: var(--color-sky-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-.quick-pill.active {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  font-weight: 700;
+  margin-top: 2px;
 }
 
 .country-select-wrapper {
@@ -656,400 +533,161 @@ defineExpose({
   gap: 12px;
 }
 
-/* Tarjeta de País Seleccionado con Bandera */
-.country-preview-card {
+.country-pill-preview {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
-  border: 1.5px solid rgba(2, 132, 199, 0.25);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  animation: fadeIn 0.2s ease;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.flag-img {
-  width: 44px;
-  height: 28px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-  border: 1px solid rgba(0,0,0,0.05);
-}
-
-.country-preview-info {
-  flex: 1;
-}
-.country-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.country-preview-name {
-  font-weight: 800;
-  font-size: 1.05rem;
-  color: var(--color-accent);
-}
-.country-iso-badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  background: #e2e8f0;
-  color: #475569;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.country-region-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.8rem;
-  margin-top: 3px;
-}
-.region-badge {
-  color: var(--color-primary);
-  font-weight: 600;
-}
-.surcharge-notice {
-  color: #d97706;
-  font-weight: 700;
-  background: #fef3c7;
-  padding: 1px 8px;
+  gap: 10px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
   border-radius: var(--radius-full);
-  font-size: 0.72rem;
+  font-size: 0.85rem;
 }
-
-/* Banner de itinerario confirmado */
-.itinerary-duration-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
-  border: 1px solid #bbf7d0;
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  margin-top: 14px;
-  animation: fadeIn 0.25s ease;
+.flag-img {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
 }
-.duration-icon {
-  font-size: 1.5rem;
+.preview-country-name {
+  font-weight: 700;
+  color: #111111;
 }
-.duration-text {
-  display: flex;
-  flex-direction: column;
+.preview-country-region {
+  color: #717171;
 }
-.duration-text strong {
-  font-size: 0.88rem;
-  color: #065f46;
-}
-.duration-text span {
+.preview-surcharge-rate {
+  margin-left: auto;
+  font-weight: 600;
+  color: #111111;
   font-size: 0.78rem;
-  color: #047857;
 }
 
 .btn-submit {
   width: 100%;
   padding: 16px;
-  font-size: 1.08rem;
-  margin-top: 10px;
-  border-radius: var(--radius-md);
-}
-.btn-spinner-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.spinner-small {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  font-size: 1rem;
+  border-radius: var(--radius-full);
 }
 
-/* ============================================================
-   BOARDING PASS / VOUCHER DE SEGURO (SIDEBAR)
-   ============================================================ */
+/* Sidebar Editorial */
 .sidebar-pricing {
   position: sticky;
   top: 90px;
 }
 
-.boarding-pass-card {
-  background: #ffffff;
-  border-radius: var(--radius-xl);
+.pricing-card {
+  background-color: #ffffff;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-travel);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
 }
 
-.boarding-pass-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.pass-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.pass-icon {
-  font-size: 1.6rem;
-}
-.pass-title {
-  display: block;
-  font-size: 0.95rem;
+.pricing-title {
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
-}
-.pass-type {
-  display: block;
-  font-size: 0.68rem;
-  color: #94a3b8;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-}
-
-.ticket-status-pill {
-  background: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Franja de Ruta de Vuelo */
-.flight-route-strip {
-  background: #f8fafc;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #f1f5f9;
-}
-.route-city {
-  display: flex;
-  flex-direction: column;
-}
-.city-code {
-  font-size: 1.15rem;
-  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-accent);
-}
-.city-name {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  max-width: 110px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.flight-arrow-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-primary);
-}
-.flight-line {
-  width: 24px;
-  height: 1.5px;
-  background: #cbd5e1;
-}
-.plane-flight {
-  font-size: 1.1rem;
+  margin-bottom: 20px;
 }
 
-/* Perforación de boleto aéreo con semicírculos laterales */
-.ticket-tear-line {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 20px;
-  background: #ffffff;
-}
-.tear-dashed {
-  flex: 1;
-  border-top: 2px dashed #cbd5e1;
-  margin: 0 16px;
-}
-.tear-notch {
-  width: 14px;
-  height: 20px;
-  background-color: var(--bg-app);
-  position: absolute;
-}
-.notch-left {
-  left: 0;
-  border-radius: 0 10px 10px 0;
-  border-right: 1px solid var(--border-color);
-}
-.notch-right {
-  right: 0;
-  border-radius: 10px 0 0 10px;
-  border-left: 1px solid var(--border-color);
-}
-
-/* Cuerpo del Boarding Pass */
-.boarding-pass-body {
+.price-hero-box {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.price-hero-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #717171;
+}
+.price-hero-val {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+.price-hero-val .currency {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #717171;
+}
+.price-hero-sub {
+  font-size: 0.75rem;
+  color: #15803d;
+  font-weight: 600;
 }
 
-.breakdown-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.editorial-divider {
+  height: 1px;
+  background-color: var(--border-subtle);
+  margin: 16px 0;
 }
+
 .breakdown-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
-}
-.b-label {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-.b-val {
-  font-weight: 700;
-  color: var(--text-main);
-}
-.highlight-days {
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-}
-
-/* Caja de Total Grande */
-.pass-total-box {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1.5px solid rgba(2, 132, 199, 0.25);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  text-align: center;
-  margin-top: 14px;
-}
-.total-caption {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #0369a1;
-  letter-spacing: 0.8px;
-}
-.total-big-amount {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #0369a1;
-  line-height: 1.1;
-  margin: 4px 0;
-}
-.total-big-amount .currency {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0284c7;
-}
-.all-inclusive-tag {
-  font-size: 0.75rem;
-  color: #047857;
-  font-weight: 700;
-}
-
-/* Estado de Espera / Placeholder */
-.empty-pass-placeholder {
-  text-align: center;
-  padding: 24px 10px;
-  color: var(--text-muted);
-}
-.compass-icon {
-  font-size: 3rem;
+  font-size: 0.88rem;
   margin-bottom: 10px;
 }
-.empty-pass-placeholder h4 {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--color-accent);
+.b-label {
+  color: #717171;
 }
-.empty-pass-placeholder p {
-  font-size: 0.825rem;
-  margin-top: 4px;
+.b-val {
+  font-weight: 600;
+  color: #111111;
 }
 
-/* Garantías incluidas */
-.included-perks-box {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
-}
-.perks-title {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
-.perks-checklist {
-  list-style: none;
+.minimal-perks {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-.perks-checklist li {
-  font-size: 0.78rem;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.check-icon {
-  color: var(--color-success);
-  font-weight: 800;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #555555;
+  font-weight: 500;
 }
 
-/* Matriz de recargos compacta */
-.regional-surcharges-compact {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #f8fafc;
-  border-radius: var(--radius-sm);
+.pricing-empty {
+  padding: 24px 0;
+  text-align: center;
+}
+.empty-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.surcharge-reference-box {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
 }
-.rules-caption {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+.ref-title {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #717171;
+  margin-bottom: 8px;
 }
-.rules-badges {
+.ref-items {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 4px;
-}
-.rule-badge {
-  font-size: 0.7rem;
-  color: #334155;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #444444;
 }
 
 @media (max-width: 960px) {

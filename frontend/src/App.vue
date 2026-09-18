@@ -5,7 +5,7 @@
     <main class="container main-content">
       <!-- Alertas Globales -->
       <div v-if="store.errorMessage" class="alert alert-danger">
-        <span>⚠️ {{ store.errorMessage }}</span>
+        <span>{{ store.errorMessage }}</span>
         <button class="alert-close" @click="store.clearAlerts">✕</button>
       </div>
 
@@ -14,20 +14,25 @@
         <button class="alert-close" @click="store.clearAlerts">✕</button>
       </div>
 
-      <!-- Pestaña 1: Nueva Cotización de Viaje -->
+      <!-- Pestaña 1: Nueva Cotización -->
       <section v-if="store.activeTab === 'create'">
-        <!-- Hero de Viajes con Sugerencias y Beneficios -->
-        <TravelHero @selectDestination="onSelectDestination" />
+        <!-- Hero Editorial con Cápsula de Búsqueda Flotante -->
+        <TravelHero
+          @selectDestination="onSelectDestination"
+          @updateDates="onUpdateDates"
+        />
+
+        <!-- Formulario Detallado & Resumen de Cotización -->
         <QuoteForm ref="quoteFormRef" @quoteCreated="onQuoteCreated" />
       </section>
 
-      <!-- Pestaña 2: Listado y Gestión de Seguros -->
+      <!-- Pestaña 2: Consulta y Gestión de Seguros -->
       <section v-else-if="store.activeTab === 'list'">
         <QuotationsList />
       </section>
     </main>
 
-    <!-- Modal de Resultado / Voucher de Póliza -->
+    <!-- Modal de Resultado / Certificado de Póliza -->
     <QuoteResultModal
       v-if="modalQuote"
       :quote="modalQuote"
@@ -37,12 +42,12 @@
     <footer class="app-footer">
       <div class="container footer-container">
         <div class="footer-brand-row">
-          <span class="footer-logo">✈️ ViajaTranqui Seguros</span>
+          <span class="footer-logo">ViajaTranqui</span>
           <span class="footer-divider">•</span>
-          <span>Protección médica internacional 24/7 en más de 190 países</span>
+          <span>Cobertura médica internacional 24/7 en más de 190 países</span>
         </div>
         <p class="footer-sub">
-          Sistema de Cotización y Venta de Seguro de Viaje • Laravel 11 + Vue 3 + TypeScript + Docker
+          Sistema de Cotización y Venta de Seguro de Viaje • Laravel 11 + Vue 3 + TypeScript
         </p>
       </div>
     </footer>
@@ -69,6 +74,12 @@ function onSelectDestination(countryCode: string): void {
   }
 }
 
+function onUpdateDates(payload: { start: string; end: string }): void {
+  if (quoteFormRef.value) {
+    quoteFormRef.value.setDates(payload.start, payload.end);
+  }
+}
+
 function onQuoteCreated(quotation: Quotation): void {
   modalQuote.value = quotation;
 }
@@ -87,8 +98,8 @@ function closeModal(): void {
 
 .main-content {
   flex: 1;
-  padding-top: 36px;
-  padding-bottom: 56px;
+  padding-top: 32px;
+  padding-bottom: 64px;
 }
 
 .alert-close {
@@ -98,7 +109,7 @@ function closeModal(): void {
   cursor: pointer;
   color: inherit;
   margin-left: 14px;
-  opacity: 0.75;
+  opacity: 0.65;
   transition: opacity 0.15s ease;
 }
 .alert-close:hover {
@@ -107,8 +118,8 @@ function closeModal(): void {
 
 .app-footer {
   background-color: #ffffff;
-  border-top: 1px solid var(--border-color);
-  padding: 30px 0;
+  border-top: 1px solid #f0f0f0;
+  padding: 36px 0;
   margin-top: auto;
   text-align: center;
   font-size: 0.88rem;
@@ -119,23 +130,24 @@ function closeModal(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-weight: 700;
-  color: var(--color-accent);
+  gap: 10px;
+  font-weight: 600;
+  color: #111111;
   flex-wrap: wrap;
 }
 
 .footer-logo {
-  color: var(--color-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .footer-divider {
-  color: #cbd5e1;
+  color: #d4d4d4;
 }
 
 .footer-sub {
   font-size: 0.8rem;
-  color: #94a3b8;
-  margin-top: 6px;
+  color: #a1a1aa;
+  margin-top: 8px;
 }
 </style>

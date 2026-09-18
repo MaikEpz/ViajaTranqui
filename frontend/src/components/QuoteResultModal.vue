@@ -1,168 +1,100 @@
 <template>
   <div v-if="quote" class="modal-backdrop" @click.self="$emit('close')">
     <div class="modal-card">
-      <!-- Encabezado estilo Voucher de Vuelo -->
       <div class="modal-header">
-        <div class="modal-brand">
-          <span class="brand-plane">✈️</span>
-          <div>
-            <span class="voucher-title">VIAJATRANQUI GLOBAL TRAVEL</span>
-            <span class="voucher-subtitle">COMPROBANTE OFICIAL DE COBERTURA</span>
-          </div>
+        <div>
+          <span class="modal-category">Póliza Oficial</span>
+          <h3 class="modal-title">
+            {{ quote.status === 'Contratado' ? 'Póliza Emitida con Éxito' : 'Resumen de Cotización' }}
+          </h3>
         </div>
         <button class="close-btn" title="Cerrar" @click="$emit('close')">✕</button>
       </div>
 
       <div class="modal-content">
-        <!-- Tarjeta Central de la Póliza -->
-        <div class="policy-ticket">
-          <!-- Cinta de Estado -->
-          <div class="ticket-status-bar">
-            <div class="status-left">
-              <span class="status-dot" :class="quote.status === 'Contratado' ? 'dot-active' : 'dot-quoted'"></span>
-              <span class="status-name">{{ quote.status === 'Contratado' ? 'PÓLIZA CONTRATADA Y ACTIVA' : 'COTIZACIÓN DISPONIBLE' }}</span>
+        <!-- Tarjeta de Certificado Minimalista -->
+        <div class="policy-receipt">
+          <div class="receipt-top">
+            <div class="receipt-status-pill">
+              <span class="status-dot" :class="quote.status === 'Contratado' ? 'dot-green' : 'dot-gray'"></span>
+              <span>{{ quote.status }}</span>
             </div>
-            <span class="policy-code">REF: #VTQ-{{ String(quote.id).padStart(5, '0') }}</span>
+            <span class="receipt-ref">VTQ-{{ String(quote.id).padStart(5, '0') }}</span>
           </div>
 
-          <!-- Ruta del Viaje -->
-          <div class="ticket-route-box">
-            <div class="route-point">
-              <span class="route-city">ECUADOR</span>
-              <span class="route-tag">Origen</span>
-            </div>
+          <div class="receipt-hero-price">
+            <span class="price-caption">VALOR TOTAL</span>
+            <div class="price-val">${{ Number(quote.total_amount).toFixed(2) }} <span class="cur">USD</span></div>
+          </div>
 
-            <div class="route-flight-symbol">
-              <span class="dashed-line"></span>
-              <span class="fly-icon">✈</span>
-              <span class="dashed-line"></span>
-            </div>
+          <div class="receipt-divider"></div>
 
-            <div class="route-point text-right">
-              <span class="route-city">
-                <img v-if="quote.destination_flag_url" :src="quote.destination_flag_url" class="route-flag" />
-                {{ quote.destination_country }}
+          <div class="receipt-details">
+            <div class="r-row">
+              <span class="r-label">Asegurado</span>
+              <span class="r-val">{{ quote.first_name }} {{ quote.last_name }}</span>
+            </div>
+            <div class="r-row">
+              <span class="r-label">Identificación / DNI</span>
+              <span class="r-val">{{ quote.identification_number }}</span>
+            </div>
+            <div class="r-row">
+              <span class="r-label">Destino</span>
+              <span class="r-val">
+                <img v-if="quote.destination_flag_url" :src="quote.destination_flag_url" class="mini-flag" />
+                {{ quote.destination_country }} ({{ quote.destination_region }})
               </span>
-              <span class="route-tag">Destino ({{ quote.destination_region }})</span>
+            </div>
+            <div class="r-row">
+              <span class="r-label">Vigencia</span>
+              <span class="r-val">{{ formatDate(quote.start_date) }} al {{ formatDate(quote.end_date) }}</span>
+            </div>
+            <div class="r-row">
+              <span class="r-label">Duración</span>
+              <span class="r-val">{{ quote.days_count }} días de cobertura</span>
             </div>
           </div>
 
-          <!-- Perforación decorativa de boleto -->
-          <div class="ticket-divider">
-            <div class="notch notch-left"></div>
-            <div class="dashed-border"></div>
-            <div class="notch notch-right"></div>
-          </div>
+          <div class="receipt-divider"></div>
 
-          <!-- Detalles del Pasajero y Fechas -->
-          <div class="ticket-passenger-grid">
-            <div class="p-item">
-              <span class="p-label">Asegurado</span>
-              <span class="p-value">{{ quote.first_name }} {{ quote.last_name }}</span>
-            </div>
-            <div class="p-item">
-              <span class="p-label">Identificación / Pasaporte</span>
-              <span class="p-value"><code>{{ quote.identification_number }}</code></span>
-            </div>
-            <div class="p-item">
-              <span class="p-label">Fechas del Viaje</span>
-              <span class="p-value">{{ formatDate(quote.start_date) }} al {{ formatDate(quote.end_date) }}</span>
-            </div>
-            <div class="p-item">
-              <span class="p-label">Días Cobertura</span>
-              <span class="p-value highlight-days">{{ quote.days_count }} días continuos</span>
-            </div>
-          </div>
-
-          <!-- Desglose Financiero -->
-          <div class="ticket-pricing-breakdown">
-            <div class="p-row">
-              <span>Tarifa Base (USD $3.00/día × {{ quote.days_count }} d):</span>
+          <div class="receipt-breakdown">
+            <div class="b-row">
+              <span>Tarifa Base ({{ quote.days_count }} d × $3.00):</span>
               <span>${{ Number(quote.base_amount).toFixed(2) }}</span>
             </div>
-            <div class="p-row">
-              <span>Recargo Regional {{ quote.destination_region }} ({{ quote.surcharge_percentage }}%):</span>
-              <span class="text-warning">+${{ Number(quote.surcharge_amount).toFixed(2) }}</span>
+            <div class="b-row">
+              <span>Recargo Regional ({{ quote.surcharge_percentage }}%):</span>
+              <span>+${{ Number(quote.surcharge_amount).toFixed(2) }}</span>
             </div>
-            <div class="p-row total-row">
-              <span class="total-label">TOTAL A PAGAR (USD):</span>
-              <span class="total-value">${{ Number(quote.total_amount).toFixed(2) }}</span>
-            </div>
-          </div>
-
-          <!-- Código de barras decorativo SVG -->
-          <div class="ticket-barcode-strip">
-            <svg class="barcode-svg" viewBox="0 0 200 30">
-              <rect x="0" y="0" width="3" height="30" fill="#334155" />
-              <rect x="6" y="0" width="2" height="30" fill="#334155" />
-              <rect x="11" y="0" width="4" height="30" fill="#334155" />
-              <rect x="18" y="0" width="1" height="30" fill="#334155" />
-              <rect x="22" y="0" width="3" height="30" fill="#334155" />
-              <rect x="28" y="0" width="2" height="30" fill="#334155" />
-              <rect x="33" y="0" width="5" height="30" fill="#334155" />
-              <rect x="41" y="0" width="2" height="30" fill="#334155" />
-              <rect x="46" y="0" width="3" height="30" fill="#334155" />
-              <rect x="52" y="0" width="1" height="30" fill="#334155" />
-              <rect x="56" y="0" width="4" height="30" fill="#334155" />
-              <rect x="63" y="0" width="2" height="30" fill="#334155" />
-              <rect x="68" y="0" width="3" height="30" fill="#334155" />
-              <rect x="74" y="0" width="2" height="30" fill="#334155" />
-              <rect x="79" y="0" width="4" height="30" fill="#334155" />
-              <rect x="86" y="0" width="2" height="30" fill="#334155" />
-              <rect x="91" y="0" width="3" height="30" fill="#334155" />
-              <rect x="97" y="0" width="2" height="30" fill="#334155" />
-              <rect x="102" y="0" width="4" height="30" fill="#334155" />
-              <rect x="109" y="0" width="1" height="30" fill="#334155" />
-              <rect x="113" y="0" width="3" height="30" fill="#334155" />
-              <rect x="119" y="0" width="2" height="30" fill="#334155" />
-              <rect x="124" y="0" width="5" height="30" fill="#334155" />
-              <rect x="132" y="0" width="2" height="30" fill="#334155" />
-              <rect x="137" y="0" width="3" height="30" fill="#334155" />
-              <rect x="143" y="0" width="2" height="30" fill="#334155" />
-              <rect x="148" y="0" width="4" height="30" fill="#334155" />
-              <rect x="155" y="0" width="1" height="30" fill="#334155" />
-              <rect x="159" y="0" width="3" height="30" fill="#334155" />
-              <rect x="165" y="0" width="2" height="30" fill="#334155" />
-              <rect x="170" y="0" width="4" height="30" fill="#334155" />
-              <rect x="177" y="0" width="2" height="30" fill="#334155" />
-              <rect x="182" y="0" width="3" height="30" fill="#334155" />
-              <rect x="188" y="0" width="2" height="30" fill="#334155" />
-              <rect x="193" y="0" width="4" height="30" fill="#334155" />
-            </svg>
-            <span class="barcode-number">VTQ-{{ String(quote.id).padStart(5, '0') }}-SECURE-PASS</span>
           </div>
         </div>
 
-        <div v-if="quote.status === 'Contratado'" class="contract-confirmed-banner">
-          <span class="banner-check">✓</span>
-          <div>
-            <strong>¡Póliza Activa y Confirmada!</strong>
-            <p>Se ha emitido oficialmente la cobertura. Puede descargar su certificado en PDF para trámites consulares.</p>
-          </div>
+        <div v-if="quote.status === 'Contratado'" class="status-notice-success">
+          ✓ Póliza confirmada y registrada en el sistema. Válida para visado Schengen.
         </div>
       </div>
 
-      <!-- Botones de Acción del Modal -->
+      <!-- Acciones Minimalistas -->
       <div class="modal-actions">
         <button class="btn btn-secondary btn-action" @click="downloadPdf">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
           </svg>
-          Descargar Comprobante PDF
+          Descargar PDF
         </button>
 
         <button
           v-if="quote.status === 'Cotizado'"
-          class="btn btn-success btn-action"
+          class="btn btn-primary btn-action"
           :disabled="store.actionLoading"
           @click="contractInsurance"
         >
-          <span v-if="store.actionLoading">Procesando emisión...</span>
-          <span v-else>✓ Confirmar y Contratar Seguro</span>
+          <span v-if="store.actionLoading">Confirmando...</span>
+          <span v-else>Confirmar y Contratar ➔</span>
         </button>
 
         <button v-else class="btn btn-primary btn-action" @click="$emit('close')">
-          Cerrar
+          Listo
         </button>
       </div>
     </div>
@@ -209,29 +141,30 @@ function formatDate(dateStr: string): string {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
-  padding: 16px;
+  padding: 20px;
 }
 
 .modal-card {
   background-color: #ffffff;
   border-radius: var(--radius-xl);
-  max-width: 540px;
+  max-width: 500px;
   width: 100%;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes modalPop {
+@keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(12px);
+    transform: scale(0.96) translateY(8px);
   }
   to {
     opacity: 1;
@@ -240,304 +173,178 @@ function formatDate(dateStr: string): string {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
-  padding: 18px 24px;
+  padding: 28px 28px 16px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
-.modal-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.brand-plane {
-  font-size: 1.6rem;
-}
-.voucher-title {
-  display: block;
-  font-size: 0.95rem;
+.modal-category {
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
-}
-.voucher-subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #717171;
   display: block;
-  font-size: 0.7rem;
-  color: #94a3b8;
-  font-weight: 600;
-  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.02em;
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #717171;
   cursor: pointer;
-  transition: all 0.15s ease;
+  padding: 4px;
+  border-radius: 50%;
+  transition: color 0.15s ease;
 }
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  color: #111111;
 }
 
 .modal-content {
+  padding: 0 28px 28px;
+}
+
+.policy-receipt {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   padding: 24px;
 }
 
-/* Tarjeta Ticket */
-.policy-ticket {
-  background: #ffffff;
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-.ticket-status-bar {
-  background: #f8fafc;
-  padding: 10px 16px;
+.receipt-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 16px;
 }
-.status-left {
-  display: flex;
+
+.receipt-status-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #111111;
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
 }
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
-.dot-active {
-  background-color: var(--color-success);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-}
-.dot-quoted {
-  background-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
-}
-.status-name {
+.dot-green { background-color: #15803d; }
+.dot-gray { background-color: #717171; }
+
+.receipt-ref {
   font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: var(--color-accent);
-}
-.policy-code {
-  font-size: 0.75rem;
+  font-family: monospace;
   font-weight: 700;
-  color: var(--text-muted);
+  color: #717171;
 }
 
-/* Franja de Ruta */
-.ticket-route-box {
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
+.receipt-hero-price {
+  text-align: center;
+  padding: 12px 0;
 }
-.route-point {
-  display: flex;
-  flex-direction: column;
-}
-.route-city {
-  font-size: 1.15rem;
+.price-caption {
+  font-size: 0.65rem;
   font-weight: 800;
-  color: var(--color-accent);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.route-flag {
-  width: 22px;
-  height: 14px;
-  object-fit: cover;
-  border-radius: 2px;
-}
-.route-tag {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-.route-flight-symbol {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-primary);
-}
-.dashed-line {
-  width: 24px;
-  height: 1px;
-  background: #cbd5e1;
-}
-.fly-icon {
-  font-size: 1.1rem;
-}
-
-/* Divisor con perforación */
-.ticket-divider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 16px;
-  background: #ffffff;
-}
-.dashed-border {
-  flex: 1;
-  border-top: 2px dashed #cbd5e1;
-  margin: 0 14px;
-}
-.notch {
-  width: 12px;
-  height: 16px;
-  background-color: #ffffff;
-  position: absolute;
-}
-.notch-left {
-  left: 0;
-  border-radius: 0 8px 8px 0;
-  border-right: 1.5px solid var(--border-color);
-  background: #f8fafc;
-}
-.notch-right {
-  right: 0;
-  border-radius: 8px 0 0 8px;
-  border-left: 1.5px solid var(--border-color);
-  background: #f8fafc;
-}
-
-/* Grilla de Pasajero */
-.ticket-passenger-grid {
-  padding: 14px 20px;
-  background: #ffffff;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.p-item {
-  display: flex;
-  flex-direction: column;
-}
-.p-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
   text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.1em;
+  color: #717171;
 }
-.p-value {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--color-accent);
+.price-val {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #111111;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-top: 2px;
 }
-.highlight-days {
-  color: var(--color-primary);
+.price-val .cur {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #717171;
 }
 
-/* Desglose de Precios */
-.ticket-pricing-breakdown {
-  padding: 14px 20px;
-  background: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+.receipt-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 14px 0;
+}
+
+.receipt-details {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
-.p-row {
+.r-row {
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: var(--text-muted);
 }
-.p-row span:last-child {
-  font-weight: 700;
-  color: var(--text-main);
+.r-label {
+  color: #717171;
 }
-.text-warning {
-  color: #d97706 !important;
+.r-val {
+  font-weight: 600;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.total-row {
-  border-top: 1px solid var(--border-color);
-  padding-top: 8px;
-  margin-top: 4px;
-}
-.total-label {
-  font-weight: 800;
-  color: var(--color-accent);
-  font-size: 0.9rem;
-}
-.total-value {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--color-primary);
+.mini-flag {
+  width: 18px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
 }
 
-/* Código de Barras */
-.ticket-barcode-strip {
-  background: #ffffff;
-  padding: 12px 20px;
-  border-top: 1px solid #f1f5f9;
+.receipt-breakdown {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #717171;
 }
-.barcode-svg {
-  width: 180px;
-  height: 24px;
-}
-.barcode-number {
-  font-size: 0.68rem;
-  letter-spacing: 1.5px;
-  font-family: monospace;
-  color: var(--text-muted);
+.b-row {
+  display: flex;
+  justify-content: space-between;
 }
 
-/* Banner de Póliza Activa */
-.contract-confirmed-banner {
+.status-notice-success {
   margin-top: 16px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #bbf7d0;
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  font-size: 0.82rem;
+  font-weight: 600;
   border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.banner-check {
-  font-size: 1.4rem;
-  color: #15803d;
-  font-weight: 800;
-}
-.contract-confirmed-banner strong {
-  font-size: 0.88rem;
-  color: #166534;
-  display: block;
-}
-.contract-confirmed-banner p {
-  font-size: 0.78rem;
-  color: #15803d;
-  margin-top: 2px;
+  border: 1px solid #bbf7d0;
+  text-align: center;
 }
 
-/* Acciones */
 .modal-actions {
   display: flex;
   gap: 12px;
-  padding: 18px 24px;
-  background-color: #f8fafc;
+  padding: 20px 28px;
   border-top: 1px solid var(--border-color);
+  background-color: #ffffff;
 }
 .btn-action {
   flex: 1;
