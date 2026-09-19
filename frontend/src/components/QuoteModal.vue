@@ -145,29 +145,99 @@
           <!-- Columna Resumen de Tarifa -->
           <div class="rate-summary-col">
             <div class="rate-summary-box">
-              <span class="rs-eyebrow">Tarifa Liquidada</span>
-              <div class="rs-amount-block">
-                <div class="rs-total">
-                  ${{ preview ? preview.total_amount.toFixed(2) : '0.00' }}
-                  <small>USD</small>
-                </div>
-                <span class="rs-total-sub">Tarifa final neta • Sin deducibles</span>
+              <div class="rs-header-row">
+                <span class="rs-eyebrow">Tarifa Liquidada</span>
+                <button
+                  type="button"
+                  class="btn-rates-trigger"
+                  :class="{ 'is-active': showRatesPopover }"
+                  title="Conoce cómo se calculan las tarifas por región"
+                  @click="showRatesPopover = !showRatesPopover"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>Tarifario</span>
+                </button>
               </div>
 
-              <div class="rs-divider"></div>
+              <!-- Overlay transparente para cerrar al hacer clic afuera -->
+              <div v-if="showRatesPopover" class="popover-backdrop-dismiss" @click="showRatesPopover = false"></div>
 
-              <div class="rs-lines">
-                <div class="rs-line">
-                  <span>Días de Cobertura:</span>
-                  <strong>{{ preview ? preview.days_count : 0 }} días</strong>
+              <!-- POPOVER MINIMALISTA Y MODERNO DE TARIFAS Y RECARGOS (OVERLAY FLOTANTE) -->
+              <transition name="popover-fade">
+                <div v-if="showRatesPopover" class="rates-popover-card">
+                  <div class="popover-top-bar">
+                    <div class="popover-badge">
+                      <span class="popover-dot"></span>
+                      <span>Estructura Tarifaria</span>
+                    </div>
+                    <button type="button" class="btn-popover-close" @click="showRatesPopover = false" title="Cerrar">✕</button>
+                  </div>
+                  
+                  <div class="popover-base-info">
+                    <span class="pbi-tag">TARIFA BASE</span>
+                    <span class="pbi-value">$3.00 USD <small>/ día de viaje</small></span>
+                  </div>
+
+                  <div class="popover-divider"></div>
+
+                  <div class="popover-section-label">Recargos Actuariales por Región:</div>
+                  <div class="rates-matrix-list">
+                    <div
+                      v-for="(rate, reg) in regionRatesList"
+                      :key="reg"
+                      class="rate-matrix-item"
+                      :class="{ 'is-current-destination': selectedCountry?.region === reg }"
+                    >
+                      <div class="rm-name-box">
+                        <span class="rm-icon">{{ rate.icon }}</span>
+                        <span class="rm-name">{{ reg }}</span>
+                        <span v-if="selectedCountry?.region === reg" class="rm-current-pill">Tu viaje</span>
+                      </div>
+                      <span class="rm-pct">+{{ rate.pct }}%</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="rs-line">
-                  <span>Tarifa Base ($3.00/día):</span>
-                  <strong>${{ preview ? preview.base_amount.toFixed(2) : '0.00' }} USD</strong>
+              </transition>
+
+              <!-- Skeleton Loader si está calculando y no hay preview -->
+              <div v-if="calculating && !preview" class="rate-skeleton-loader">
+                <div class="skel-bar skel-total"></div>
+                <div class="skel-bar skel-sub"></div>
+                <div class="rs-divider"></div>
+                <div class="skel-bar skel-line"></div>
+                <div class="skel-bar skel-line"></div>
+                <div class="skel-bar skel-line"></div>
+              </div>
+
+              <!-- Desglose de Valores Líquidos -->
+              <div v-else class="rate-values-wrapper" :class="{ 'is-refreshing': calculating }">
+                <div class="rs-amount-block">
+                  <div class="rs-total">
+                    ${{ preview ? preview.total_amount.toFixed(2) : '0.00' }}
+                    <small>USD</small>
+                  </div>
+                  <span class="rs-total-sub">Tarifa final neta • Sin deducibles</span>
                 </div>
-                <div class="rs-line">
-                  <span>Recargo {{ selectedCountry?.region }} ({{ preview?.surcharge_percentage }}%):</span>
-                  <strong>+${{ preview ? preview.surcharge_amount.toFixed(2) : '0.00' }} USD</strong>
+
+                <div class="rs-divider"></div>
+
+                <div class="rs-lines">
+                  <div class="rs-line">
+                    <span>Días de Cobertura:</span>
+                    <strong>{{ preview ? preview.days_count : 0 }} días</strong>
+                  </div>
+                  <div class="rs-line">
+                    <span>Tarifa Base ($3.00/día):</span>
+                    <strong>${{ preview ? preview.base_amount.toFixed(2) : '0.00' }} USD</strong>
+                  </div>
+                  <div class="rs-line">
+                    <span>Recargo {{ selectedCountry?.region || 'Regional' }} ({{ preview?.surcharge_percentage ?? 0 }}%):</span>
+                    <strong>+${{ preview ? preview.surcharge_amount.toFixed(2) : '0.00' }} USD</strong>
+                  </div>
                 </div>
               </div>
 
@@ -274,12 +344,57 @@ const emit = defineEmits<{
 
 const store = useQuotationStore();
 
+const regionRatesList: Record<string, { pct: number; icon: string }> = {
+  'South America': { pct: 0, icon: '🌎' },
+  'North America': { pct: 15, icon: '🗽' },
+  'Europe':        { pct: 20, icon: '🏰' },
+  'Asia':          { pct: 25, icon: '⛩️' },
+  'Africa':        { pct: 20, icon: '🦁' },
+  'Oceania':       { pct: 25, icon: '🦘' },
+};
+
+/**
+ * Función pura de cálculo actuarial instantáneo en el cliente (0 ms de latencia)
+ */
+function computeLocalPreview(region: string, start: string, end: string): PricingBreakdown | null {
+  if (!region || !start || !end || end < start) return null;
+  const d1 = new Date(start + 'T00:00:00');
+  const d2 = new Date(end + 'T00:00:00');
+  const diffTime = d2.getTime() - d1.getTime();
+  const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  if (days <= 0) return null;
+
+  const baseRate = 3.00;
+  const baseAmount = Number((days * baseRate).toFixed(2));
+  const rateConfig = regionRatesList[region];
+  const pct = rateConfig !== undefined ? rateConfig.pct : (region.toLowerCase().includes('america') ? 0 : 0);
+  const surchargeAmount = Number((baseAmount * (pct / 100)).toFixed(2));
+  const totalAmount = Number((baseAmount + surchargeAmount).toFixed(2));
+
+  return {
+    days_count: days,
+    base_rate_per_day: baseRate,
+    base_amount: baseAmount,
+    surcharge_percentage: pct,
+    surcharge_amount: surchargeAmount,
+    total_amount: totalAmount,
+    formatted: {
+      base_rate: `$${baseRate.toFixed(2)}`,
+      base_amount: `$${baseAmount.toFixed(2)}`,
+      surcharge_amount: `$${surchargeAmount.toFixed(2)}`,
+      total_amount: `$${totalAmount.toFixed(2)}`,
+    },
+  };
+}
+
 const todayDate = new Date().toISOString().split('T')[0];
 const selectedCountryCode = ref<string>(store.tripDraft?.countryCode || 'ESP');
-const selectedCountry = ref<Country | null>(null);
-const preview = ref<PricingBreakdown | null>(null);
-const editingItinerary = ref<boolean>(false);
-const issuedQuote = ref<Quotation | null>(null);
+
+// Inicialización instantánea si los países ya están en caché del store
+const initialCountry = store.countries.find((c: Country) => c.code === selectedCountryCode.value) 
+  || store.countries.find((c: Country) => c.code === 'ESP')
+  || null;
+const selectedCountry = ref<Country | null>(initialCountry);
 
 const form = reactive({
   first_name: '',
@@ -291,6 +406,27 @@ const form = reactive({
   end_date: store.tripDraft?.endDate || '',
 });
 
+// Fechas por defecto si aún no estaban definidas
+if (!form.start_date) {
+  const d1 = new Date();
+  d1.setDate(d1.getDate() + 7);
+  const d2 = new Date(d1);
+  d2.setDate(d2.getDate() + 9);
+  form.start_date = d1.toISOString().split('T')[0];
+  form.end_date = d2.toISOString().split('T')[0];
+}
+
+// CÁLCULO INICIAL INSTANTÁNEO (Elimina los 3 segundos de espera al abrir)
+const initialRegion = selectedCountry.value ? selectedCountry.value.region : 'Europe';
+const preview = ref<PricingBreakdown | null>(
+  computeLocalPreview(initialRegion, form.start_date, form.end_date)
+);
+
+const calculating = ref<boolean>(false);
+const showRatesPopover = ref<boolean>(false);
+const editingItinerary = ref<boolean>(false);
+const issuedQuote = ref<Quotation | null>(null);
+
 const errors = reactive<Record<string, string>>({
   first_name: '',
   last_name: '',
@@ -300,38 +436,56 @@ const errors = reactive<Record<string, string>>({
 });
 
 onMounted(async () => {
-  await store.fetchCountries();
-  if (selectedCountryCode.value) {
-    onCountryChange();
-  } else if (store.countries.length > 0) {
-    selectedCountryCode.value = 'ESP';
-    onCountryChange();
+  if (store.countries.length === 0) {
+    await store.fetchCountries();
+  }
+  
+  if (!selectedCountry.value) {
+    selectedCountry.value = store.countries.find((c: Country) => c.code === selectedCountryCode.value)
+      || store.countries.find((c: Country) => c.code === 'ESP')
+      || null;
   }
 
-  if (!form.start_date) {
-    const d1 = new Date();
-    d1.setDate(d1.getDate() + 7);
-    const d2 = new Date(d1);
-    d2.setDate(d2.getDate() + 9);
-    form.start_date = d1.toISOString().split('T')[0];
-    form.end_date = d2.toISOString().split('T')[0];
+  // Si no se había podido calcular previamente, se genera ahora
+  if (!preview.value && selectedCountry.value) {
+    preview.value = computeLocalPreview(selectedCountry.value.region, form.start_date, form.end_date);
   }
+
+  // Sincronización transparente de fondo con el backend (1 sola petición)
   triggerRecalculation();
 });
 
 function onCountryChange() {
   selectedCountry.value = store.countries.find((c: Country) => c.code === selectedCountryCode.value) || null;
+  // Actualización inmediata local para no hacer esperar al usuario
+  if (selectedCountry.value) {
+    preview.value = computeLocalPreview(selectedCountry.value.region, form.start_date, form.end_date);
+  }
   triggerRecalculation();
 }
 
 async function triggerRecalculation() {
   if (selectedCountry.value && form.start_date && form.end_date) {
     if (form.end_date >= form.start_date) {
-      preview.value = await store.calculatePreview(
-        selectedCountry.value.region,
-        form.start_date,
-        form.end_date
-      );
+      // 1. Responde de inmediato de forma reactiva
+      preview.value = computeLocalPreview(selectedCountry.value.region, form.start_date, form.end_date);
+      
+      // 2. Validación oficial contra el backend
+      calculating.value = true;
+      try {
+        const backendPreview = await store.calculatePreview(
+          selectedCountry.value.region,
+          form.start_date,
+          form.end_date
+        );
+        if (backendPreview) {
+          preview.value = backendPreview;
+        }
+      } catch (err) {
+        console.warn('Fallback al cálculo local actuarial:', err);
+      } finally {
+        calculating.value = false;
+      }
     } else {
       preview.value = null;
     }
@@ -679,6 +833,258 @@ function closeModal() {
   letter-spacing: 0.08em;
   color: #717171;
   display: block;
+}
+
+/* Cabecera del Resumen y Botón de Tarifario */
+.rs-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.btn-rates-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #111111;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.btn-rates-trigger:hover,
+.btn-rates-trigger.is-active {
+  background-color: #111111;
+  color: #ffffff;
+  border-color: #111111;
+  transform: translateY(-1px);
+}
+
+.rate-summary-box {
+  position: relative;
+}
+
+.popover-backdrop-dismiss {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+}
+
+/* Popover Minimalista Flotante por encima (Overlay sin desplazar el contenido) */
+.rates-popover-card {
+  position: absolute;
+  top: 32px;
+  left: -6px;
+  right: -6px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin: 0;
+  box-shadow: 0 18px 40px -8px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  backdrop-filter: blur(16px);
+}
+
+.popover-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.popover-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #111111;
+}
+
+.popover-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #15803d;
+}
+
+.btn-popover-close {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #888888;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.btn-popover-close:hover {
+  color: #111111;
+}
+
+.popover-base-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.pbi-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.pbi-value {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pbi-value small {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.popover-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #717171;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rates-matrix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rate-matrix-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  transition: background-color 0.15s ease;
+}
+
+.rate-matrix-item:hover {
+  background-color: #f4f4f5;
+}
+
+.rate-matrix-item.is-current-destination {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  font-weight: 700;
+}
+
+.rm-name-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rm-icon {
+  font-size: 0.85rem;
+}
+
+.rm-name {
+  color: #18181b;
+}
+
+.rm-current-pill {
+  font-size: 0.62rem;
+  font-weight: 800;
+  background-color: #15803d;
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  letter-spacing: 0.02em;
+}
+
+.rm-pct {
+  font-weight: 700;
+  color: #09090b;
+}
+
+.rate-matrix-item.is-current-destination .rm-pct {
+  color: #15803d;
+}
+
+/* Transición Popover */
+.popover-fade-enter-active,
+.popover-fade-leave-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popover-fade-enter-from,
+.popover-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+}
+
+/* Skeleton Loader */
+.rate-skeleton-loader {
+  padding: 6px 0 10px;
+}
+
+.skel-bar {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e2e2e2 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmerAnim 1.4s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmerAnim {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skel-total {
+  height: 38px;
+  width: 140px;
+  margin-bottom: 8px;
+}
+
+.skel-sub {
+  height: 14px;
+  width: 170px;
+}
+
+.skel-line {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.rate-values-wrapper {
+  transition: opacity 0.2s ease;
+}
+
+.rate-values-wrapper.is-refreshing {
+  opacity: 0.75;
 }
 
 .rs-amount-block {

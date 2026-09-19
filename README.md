@@ -7,6 +7,12 @@
 
 ---
 
+<p align="center">
+  <img src="./assets/home_hero.png" alt="Pantalla Principal y Cotizador de ViajaTranqui" width="100%" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+</p>
+
+---
+
 ## 🚀 1. Instalación y Puesta en Marcha Rápida
 
 Para facilitar la revisión por parte del evaluador, el proyecto cuenta con un entorno **Docker multi-contenedor** listo para iniciar con un solo comando.
@@ -31,7 +37,7 @@ docker compose up -d --build
 ```bash
 docker compose exec backend php artisan migrate:fresh --seed
 ```
-*Crea la estructura relacional e inserta 15 registros de pólizas de prueba, incluyendo el caso oficial de España por $36 USD.*
+*Crea la estructura relacional e inserta 16 registros de pólizas de prueba, incluyendo el caso oficial de España por $36 USD.*
 
 #### Paso 4: Levantar el Frontend
 En otra terminal o pestaña:
@@ -43,7 +49,7 @@ npm run dev
 
 **¡Listo! Accede a los servicios en tu navegador:**
 - 🌐 **Frontend (Aplicación Web Vue 3):** [http://localhost:5173](http://localhost:5173)
-- 🔌 **Backend API (Laravel 11):** [http://localhost:8000/api/quotes](http://localhost:8000/api/quotes)
+- 🔌 **Backend API (Laravel):** [http://localhost:8000/api/quotes](http://localhost:8000/api/quotes)
 
 ---
 
@@ -102,12 +108,22 @@ A continuación se detalla cómo se resolvió de forma rigurosa cada uno de los 
    - Diseñado como un modal en 2 pasos claros:
      - **Paso 1:** Formulario con selector interactivo de países (con búsqueda en vivo y banderas), validaciones de fechas (salida $\ge$ hoy, regreso $\ge$ salida) y cálculo dinámico en tiempo real sin recargar la página.
      - **Paso 2:** Desglose transparente de la cotización (días de viaje calculados, tarifa base de $3/día, recargo regional desglosado en porcentaje y valor, y monto total a pagar).
+
+<p align="center">
+  <img src="./assets/cotizacion_formulario.png" alt="Paso Final: Emisión de Seguro de Viaje" width="49%" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+  <img src="./assets/poliza_emitida.png" alt="Póliza Emitida con Éxito" width="49%" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+</p>
+
 2. **Validación Robusta en Backend ([StoreQuotationRequest.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Http/Requests/StoreQuotationRequest.php))**:
    - Validaciones con reglas estrictas de Laravel: `required`, `email:rfc,dns`, `after_or_equal:today`, `after_or_equal:start_date`, `before:today` para fecha de nacimiento, e integridad de país de destino.
    - Cuenta con el método `toDTO()` que transforma la petición validada directamente en un `QuotationData` inmutable de PHP 8.4.
 3. **Descarga Oficial en PDF ([QuotationPdfService.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/app/Services/QuotationPdfService.php))**:
    - Implementado con `barryvdh/laravel-dompdf` bajo la plantilla [quotation.blade.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/resources/views/pdf/quotation.blade.php).
    - Genera un comprobante oficial de seguro con isotipo corporativo embebido en Base64, bandera del país destino, número de póliza `#VTQ-XXXXX`, datos completos del titular, vigencia y desglose financiero.
+
+<p align="center">
+  <img src="./assets/certificado_pdf.png" alt="Certificado Oficial de Seguro en PDF generado con DomPDF" width="88%" style="border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+</p>
 
 ---
 
@@ -141,6 +157,9 @@ Se diseñó un **Circuito de Resiliencia en 4 Capas** desacoplado mediante la in
    - **España, 10 días:** Base $30.00 + Recargo Europa 20% ($6.00) = **$36.00 USD**.
    - Este caso exacto está insertado como el **Registro #1** de la base de datos (`QuotationSeeder.php`), listo para ser consultado y descargado en PDF.
    - Avalado por pruebas automatizadas específicas en `CalculateQuotationActionTest.php` y `QuotationCalculationServiceTest.php`.
+3. **Cálculo Reactivo Instantáneo y Popover de Tarifario ([QuoteModal.vue](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/frontend/src/components/QuoteModal.vue))**:
+   - Para maximizar la experiencia de usuario (*UX*), el modal efectúa un pre-cálculo síncrono instantáneo (0 ms de latencia) en el cliente mientras sincroniza en segundo plano con el backend.
+   - Cuenta con el botón flotante **Tarifario** que despliega un popover minimalista con la matriz oficial de recargos por continente, destacando de forma contextual la región del viaje seleccionado.
 
 ---
 
@@ -172,6 +191,11 @@ Se diseñó un **Circuito de Resiliencia en 4 Capas** desacoplado mediante la in
      - **Vigencia & Días:** Rango limpio `DD/MM/YYYY → DD/MM/YYYY` + Badge con cantidad de días de cobertura.
      - **Total & Estado:** Importe monetario destacado en USD + Badge de estado (*Cotizado* o *Contratado*).
      - **Acciones:** Botón **PDF** (descarga instantánea) y botón **Contratar** (o badge `✓ Activa` si ya fue contratada).
+
+<p align="center">
+  <img src="./assets/registro_polizas.png" alt="Tabla de Consulta y Gestión de Pólizas de Seguro" width="100%" style="border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+</p>
+
 2. **Skeleton Loader sin Salto de Pantalla (*CLS Zero*)**:
    - Durante la carga inicial de los datos, la pantalla muestra una tabla Skeleton con efecto *shimmer* que replica exactamente la estructura y anchura final, **eliminando cualquier salto brusco de tamaño (*layout shift*)**.
 3. **Búsqueda y Filtros en Tiempo Real**:
@@ -194,7 +218,7 @@ Se diseñó un **Circuito de Resiliencia en 4 Capas** desacoplado mediante la in
    - `scopeByStatus($query, $status)`: Filtro condicional por estado.
    - Casts estrictos `'start_date' => 'date:Y-m-d'` para garantizar que la API entregue fechas limpias sin basura ISO.
 3. **Seeders y Factories ([QuotationSeeder.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/database/seeders/QuotationSeeder.php) y [QuotationFactory.php](file:///c:/Users/maikpc/OneDrive/Desktop/Programas/ViajaTranqui/backend/database/factories/QuotationFactory.php))**:
-   - Población de 15 registros iniciales coherentes utilizando Faker, respetando las reglas de cálculo regional.
+   - Población de 16 registros iniciales coherentes utilizando Faker (14 generados + caso de prueba oficial de Carlos Mendoza en España + caso de prueba interactivo de Michael Peñaloza), respetando rigurosamente las reglas de cálculo actuarial por región.
 
 ---
 

@@ -1,4 +1,7 @@
 *.log
+*.sqlite
+*.sqlite*
+viajatranqui*
 .DS_Store
 .env
 .env.backup

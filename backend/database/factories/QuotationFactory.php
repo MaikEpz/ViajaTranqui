@@ -37,6 +37,10 @@ class QuotationFactory extends Factory
         $pricing = $calcService->calculate($country['region'], $startDate, $endDate);
 
         $status = $this->faker->randomElement(['Cotizado', 'Contratado']);
+        $createdAt = $this->faker->dateTimeBetween('-20 days', '-2 days');
+        $contractedAt = $status === 'Contratado' 
+            ? Carbon::instance($createdAt)->addHours($this->faker->numberBetween(1, 24))
+            : null;
 
         return [
             'first_name'               => $this->faker->firstName(),
@@ -57,7 +61,9 @@ class QuotationFactory extends Factory
             'surcharge_amount'         => $pricing['surcharge_amount'],
             'total_amount'             => $pricing['total_amount'],
             'status'                   => $status,
-            'contracted_at'            => $status === 'Contratado' ? now()->subDays($this->faker->numberBetween(0, 10)) : null,
+            'contracted_at'            => $contractedAt,
+            'created_at'               => $createdAt,
+            'updated_at'               => $createdAt,
         ];
     }
 
